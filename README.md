@@ -14,6 +14,7 @@
 
 - [Features](#features)
 - [Setup](#setup)
+- [Phones: web app or Android app](#phones-web-app-or-android-app)
 - [Using it from outside your home](#using-it-from-outside-your-home)
 - [Updating](#updating)
 - [How it works](#how-it-works)
@@ -55,10 +56,10 @@
 - **Admin in the browser.** Add and scan library folders, edit tags, manage
   users and read what the server has been doing, without a shell. Removing a
   track only drops it from the library; Atriolyric never deletes your files.
-- **Android app.** Native playback with lock-screen controls, downloads for
-  offline listening, and the same app with or without a connection.
-- **Works everywhere.** Desktop and mobile layouts, dark and light themes,
-  and installable to a phone's home screen from the browser.
+- **On every device.** Desktop and mobile layouts, dark and light themes,
+  and installable to a phone's home screen from the browser. Android also has
+  an app with downloads for offline listening; see
+  [Phones: web app or Android app](#phones-web-app-or-android-app).
 
 ## Setup
 
@@ -116,9 +117,8 @@ and password.
 play while it runs. Artwork, volume levelling and sound analysis carry on in
 the background afterwards.
 
-**5. Get the Android app (optional).** Download it from **Settings → About**
-in the web app, or from the [releases page](https://github.com/DorkSoul/atriolyric/releases).
-Enter the address you open in the browser when the app asks for a server.
+**5. Put it on your phone (optional).** Install the web app to your home
+screen, or on Android get the app; see the next section.
 
 ### If something doesn't work
 
@@ -142,6 +142,34 @@ Enter the address you open in the browser when the app asks for a server.
 Everything else that can be changed is listed in
 [docs/configuration.md](docs/configuration.md). None of it is needed for a
 normal install.
+
+## Phones: web app or Android app
+
+There are two ways to use Atriolyric on a phone. Both are the same app, with
+the same screens, playback sync and background playback.
+
+| | Web app (PWA) | Android app (APK) |
+|---|---|---|
+| Works on | iPhone, iPad, Android, desktop | Android |
+| Download music and videos for offline listening | No | Yes |
+
+The one real difference is downloads: the Android app can save songs, albums,
+playlists and videos to the phone and play them with no connection. If you
+always stream, either is fine.
+
+- **Web app (PWA), for iPhone, iPad and any other device.** There is no iOS
+  app, so iPhone and iPad users use this. Open your server's address in the
+  browser and add it to the home screen: in Safari, **Share → Add to Home
+  Screen**; in Chrome on Android, **⋮ → Add to Home screen** (or **Install
+  app**). It then opens full screen like an app.
+- **Android app (APK).** Download it from **Settings → About** in the web app,
+  or `atriolyric.apk` from the
+  [releases page](https://github.com/DorkSoul/atriolyric/releases), and allow
+  your browser to install apps when Android asks. When it asks for a server,
+  enter the address you open in the browser. Without `http://` or `https://`
+  in front, `https://` is used, so type `http://` for a plain-HTTP address
+  such as `http://192.168.1.20:8030`. The app updates itself from your server
+  when a new version is installed there.
 
 ## Using it from outside your home
 

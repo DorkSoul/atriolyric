@@ -92,15 +92,17 @@ function Shell() {
   return (
     <main className="shell">
       <h1>Connect to your server</h1>
-      <p className="shell-note">Enter the address you use to open Atriolyric in a browser.</p>
+      <p className="shell-note">Enter the address you use to open Atriolyric in a browser. Without http:// or https:// in front, https:// is used.</p>
       <form className="shell-form" onSubmit={(event) => void saveServer(event)}>
+        {/* type="text": a url field would refuse an address without https:// before
+            the app could add it. */}
         <input
-          type="url"
+          type="text"
           inputMode="url"
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
-          placeholder="https://music.example.org"
+          placeholder="music.example.org"
           aria-label="Server address"
           value={address}
           onChange={(event) => setAddress(event.target.value)}

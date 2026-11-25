@@ -1,10 +1,9 @@
 # Atriolyric for Android
 
 The Android app is the web app in a Capacitor 8 shell with one native plugin
-of our own. It differs from the PWA in three ways:
+of our own, and plays music with native players (Media3). What it adds over
+the PWA is downloads:
 
-- Music is played by native players (Media3), so it keeps playing with the
-  screen off and has a media notification and lock-screen controls.
 - Songs and videos can be downloaded to the device. A downloaded copy is the
   one that plays, with or without a connection.
 - With no connection it is still the same app: it shows what it loaded before

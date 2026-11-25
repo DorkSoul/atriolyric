@@ -23,6 +23,8 @@ import androidx.core.view.WindowCompat
 import com.getcapacitor.BridgeActivity
 import com.getcapacitor.BridgeWebViewClient
 import com.getcapacitor.CapConfig
+import java.net.URI
+import java.net.URISyntaxException
 
 /**
  * Which page the app shows. With a server set it is the web app, loaded from
@@ -53,14 +55,25 @@ object Shell {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY_SERVER, url).apply()
     }
 
-    /** "music.example.org" -> "https://music.example.org"; null when it is not an address. */
+    /** "music.example.org" -> "https://music.example.org": an address without
+     * a scheme is taken as HTTPS. http:// and https:// are kept (in any case);
+     * null when it is not an http(s) address. */
     fun normalise(input: String): String? {
-        var text = input.trim().trimEnd('/')
-        if (text.isEmpty()) return null
-        if (!text.startsWith("http://") && !text.startsWith("https://")) text = "https://$text"
-        val uri = Uri.parse(text)
-        if (uri.host.isNullOrEmpty()) return null
-        return text
+        val text = input.trim()
+        val scheme = Regex("^([A-Za-z][A-Za-z0-9+.-]*)://").find(text)?.groupValues?.get(1)
+        val rest = text.substring(scheme?.let { it.length + 3 } ?: 0).trimEnd('/')
+        if (rest.isEmpty()) return null
+        val url = when (scheme?.lowercase()) {
+            null -> "https://$rest"
+            "http", "https" -> "${scheme.lowercase()}://$rest"
+            else -> return null
+        }
+        val host = try {
+            URI(url).host
+        } catch (_: URISyntaxException) {
+            null
+        }
+        return if (host.isNullOrEmpty()) null else url
     }
 }
 
