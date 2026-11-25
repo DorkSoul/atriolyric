@@ -10,9 +10,14 @@
   and an Android app that works offline. Your files stay on your server.
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/desktop-home.webp" alt="Atriolyric home screen: recently played, recommendations, discovery previews and mixes, with the queue on the right">
+</p>
+
 ---
 
 - [Features](#features)
+- [Screenshots](#screenshots)
 - [Setup](#setup)
 - [Phones: web app or Android app](#phones-web-app-or-android-app)
 - [Using it from outside your home](#using-it-from-outside-your-home)
@@ -60,6 +65,40 @@
   and installable to a phone's home screen from the browser. Android also has
   an app with downloads for offline listening; see
   [Phones: web app or Android app](#phones-web-app-or-android-app).
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/desktop-now-playing.webp" alt="Now Playing with synced lyrics and the queue"></td>
+    <td width="50%"><img src="docs/screenshots/desktop-search.webp" alt="Search results for artists, albums and songs as you type"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Now Playing</b> with synced lyrics</td>
+    <td align="center"><b>Search</b> as you type</td>
+  </tr>
+  <tr>
+    <td colspan="2"><img src="docs/screenshots/desktop-playlists.webp" alt="Your playlists and generated mixes"></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><b>Playlists</b> and generated mixes</td>
+  </tr>
+</table>
+
+On a phone, the same app with a bottom bar and a mini player:
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/screenshots/mobile-home.webp" alt="Home screen on a phone"></td>
+    <td width="33%"><img src="docs/screenshots/mobile-now-playing.webp" alt="Now Playing on a phone, with the queue and lyrics tabs"></td>
+    <td width="33%"><img src="docs/screenshots/mobile-search.webp" alt="Search on a phone"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Home</b></td>
+    <td align="center"><b>Now Playing</b></td>
+    <td align="center"><b>Search</b></td>
+  </tr>
+</table>
 
 ## Setup
 
