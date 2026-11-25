@@ -1,0 +1,36 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:9.5.0'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.21'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+apply from: "variables.gradle"
+
+// Gradle 10 stops looking a property up in the parent project. Capacitor's
+// modules (which this repo does not own) ask for the versions above by name,
+// so every project gets its own copy of them.
+subprojects { sub ->
+    rootProject.ext.properties.each { key, value -> sub.ext.set(key, value) }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.layout.buildDirectory
+}

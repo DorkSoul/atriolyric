@@ -1,0 +1,578 @@
+/* Admin */
+
+.admin-panel {
+  /* One full-width column of cards; the side padding matches the other pages. */
+  padding: 0 var(--space-2) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .admin-panel {
+    padding-inline: 0.75rem;
+  }
+}
+
+/* The log's warning and error colours, picked to keep 4.5:1 on the log box
+   (--surface-2) in both themes. */
+:root {
+  --log-warning: #e8b339;
+  --log-error: #ff7a8c;
+}
+
+:root[data-theme='light'] {
+  --log-warning: #805300;
+  --log-error: #b81d39;
+}
+
+.admin-panel button:not(.admin-help-button):not(.password-toggle-btn):not(.chip) {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 0.4rem 0.9rem;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .admin-panel button:not(.admin-help-button):not(.password-toggle-btn):not(.chip):hover:not(:disabled) {
+    background: var(--surface-3);
+    border-color: var(--border-strong);
+  }
+}
+
+.admin-panel button:not(.admin-help-button):not(.password-toggle-btn):not(.chip):disabled {
+  opacity: 0.5;
+}
+
+/* The :not() chain repeats the one above on purpose: without it this rule
+   is out-ranked by the base button rule, so primary buttons never get the
+   accent fill and their text (--on-accent) sits on --surface-2. */
+.admin-panel button.primary:not(.admin-help-button):not(.password-toggle-btn):not(.chip):not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .admin-panel button.primary:not(.admin-help-button):not(.password-toggle-btn):not(.chip):hover:not(:disabled) {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+}
+
+.admin-panel button.danger {
+  color: var(--danger-text);
+}
+
+.admin-root-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.admin-root-edit {
+  margin-top: 0.25rem;
+}
+
+.admin-section {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.admin-panel h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  color: var(--text);
+}
+
+/* A label over a group inside a card (a small caps heading). */
+.admin-panel h3 {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-section-heading h2 {
+  margin: 0;
+}
+
+.admin-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-list > li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition);
+}
+
+@media (hover: hover) {
+  .admin-list > li:hover {
+    background: var(--surface-2);
+  }
+}
+
+.admin-list > li.admin-user-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.admin-user-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-user-actions,
+.admin-reset-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.admin-reset-row .password-input-wrap {
+  flex: 1 1 12rem;
+}
+
+.admin-list em {
+  color: var(--accent-text);
+  font-style: normal;
+  font-size: 0.8rem;
+}
+
+.admin-create-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.admin-create-row input[type='text'],
+.admin-create-row input:not([type]),
+.admin-create-row .password-input-wrap {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.admin-create-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* Each library root is its own card, with a gap between cards. */
+.admin-roots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-roots > li.admin-root-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding: 1rem 1.125rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+@media (hover: hover) {
+  /* The card is already its own surface, so it does not change on hover. */
+  .admin-roots > li.admin-root-row:hover {
+    background: var(--surface-2);
+  }
+}
+
+/* Icon-only buttons centre their glyph. */
+.admin-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-root-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-root-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Scan buttons, each followed by its own info control. */
+.admin-tks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.6rem;
+}
+
+.admin-subhead + .admin-tks {
+  margin-top: -0.25rem;
+}
+
+.admin-steps {
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+
+.admin-steps > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  color: var(--accent-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-steps[open] > summary {
+  margin-bottom: 0.6rem;
+}
+
+.admin-note {
+  margin: 0.6rem 0 0;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.admin-action-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.admin-help-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.admin-help-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 24 px: the WCAG 2.5.8 minimum target size. */
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0.1rem;
+  color: var(--text-dim);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-full);
+}
+
+.admin-help-button:focus-visible {
+  color: var(--accent-text);
+  background: var(--surface-3);
+}
+
+@media (hover: hover) {
+  .admin-help-button:hover {
+    color: var(--accent-text);
+    background: var(--surface-3);
+  }
+}
+
+.home-rail-help-bubble,
+.admin-help-bubble,
+.section-help-bubble {
+  position: fixed;
+  z-index: 2147483647;
+  width: min(22rem, 80vw);
+  padding: 0.65rem 0.75rem;
+  color: var(--text);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  pointer-events: auto;
+}
+
+.admin-root-path {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-scan-message {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.admin-scan-error {
+  color: var(--danger);
+}
+
+.admin-task-progress {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.admin-task-progress progress {
+  width: 100%;
+  height: 0.5rem;
+  accent-color: var(--accent);
+}
+
+.admin-task-progress small {
+  color: var(--text-dim);
+}
+
+.admin-access {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+}
+
+.admin-access-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.admin-access-grants {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.admin-access-grants label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+
+/* Admin → Background work: one row per background pass. */
+.admin-background-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-background-row {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.admin-background-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+}
+
+.admin-background-heading span,
+.admin-background-row small {
+  color: var(--text-dim);
+}
+
+.admin-background-row progress {
+  width: 100%;
+  height: 0.5rem;
+  accent-color: var(--accent);
+}
+
+
+/* Admin -> Server activity. */
+.admin-link-button {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 0.4rem 0.9rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .admin-link-button:hover {
+    background: var(--surface-3);
+    border-color: var(--border-strong);
+  }
+}
+
+.admin-activity-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-activity-chips,
+.admin-activity-selects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-activity-selects {
+  margin-left: auto;
+}
+
+.admin-activity-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0;
+}
+
+.logbox {
+  height: 27.5rem;
+  max-height: 70vh;
+  overflow: auto;
+  padding: 0.75rem 0.9rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  font: 0.8125rem/1.75 ui-monospace, Menlo, Consolas, monospace;
+  color: var(--text-dim);
+}
+
+.logbox:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.log-line {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.log-line b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.log-kind {
+  color: var(--text-faint);
+}
+
+.log-line.log-warning,
+.log-line.log-warning b,
+.log-line.log-warning .log-kind {
+  color: var(--log-warning);
+}
+
+.log-line.log-error,
+.log-line.log-error b,
+.log-line.log-error .log-kind {
+  color: var(--log-error);
+}
+
+.admin-activity-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 639px) {
+  .logbox {
+    font-size: 0.75rem;
+  }
+
+  /* A user's name gets a line of its own, the buttons share the next one. */
+  .admin-user-summary > span:first-child {
+    flex: 1 1 100%;
+  }
+
+  .admin-user-actions {
+    flex: 1 1 100%;
+  }
+
+  /* Buttons keep their full label and wrap onto a second line when they must. */
+  .admin-user-actions button {
+    flex: 1 1 auto;
+    white-space: nowrap;
+    padding-inline: 0.5rem;
+  }
+
+  /* The delete icon stays icon-sized. */
+  .admin-user-actions button:last-child {
+    flex: 0 0 auto;
+  }
+
+  /* Each field takes a full line; the checkbox and the submit button share the next. */
+  .admin-create-row input[type='text'],
+  .admin-create-row input:not([type]),
+  .admin-create-row .password-input-wrap {
+    flex: 1 1 100%;
+  }
+
+  .admin-root-buttons {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+
+  .admin-root-buttons button {
+    flex: 1 1 auto;
+    white-space: nowrap;
+  }
+
+  .admin-activity-selects {
+    margin-left: 0;
+  }
+}

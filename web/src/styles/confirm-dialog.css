@@ -1,0 +1,83 @@
+/* Confirmation, alert and prompt dialogs (components/ConfirmDialog.tsx). */
+
+.modal-panel.confirm-dialog {
+  max-width: 26rem;
+}
+
+.confirm-dialog-body {
+  color: var(--text-dim);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.confirm-dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.confirm-dialog-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.confirm-dialog-form input {
+  min-width: 0;
+  min-height: var(--control-h);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* A quiet pill; the main answer is the accent pill, a destructive one keeps
+   the quiet look with red text. */
+.confirm-dialog-actions button {
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.confirm-dialog-actions .confirm-dialog-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  border-radius: var(--radius-full);
+  padding: 0 1.25rem;
+  color: var(--on-accent);
+  font-weight: 700;
+}
+
+.confirm-dialog-actions .confirm-dialog-danger {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--danger-text);
+}
+
+@media (hover: hover) {
+  .confirm-dialog-actions button:hover {
+    background: var(--surface-3);
+  }
+
+  .confirm-dialog-actions .confirm-dialog-primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+}

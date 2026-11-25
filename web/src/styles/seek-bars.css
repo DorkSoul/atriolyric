@@ -1,0 +1,108 @@
+/* Seek bars: a plain filled pill (rounded the same at both ends as the
+   empty track, at any width) rather than a track-plus-thumb - a visible
+   round thumb sitting right at the fill's edge read as two overlapping
+   round shapes rather than one bar. The actual <input type="range"> is
+   still there and still fully draggable/clickable, just rendered
+   invisible on top of the fill, which does the drawing. See .seek-track's
+   markup (a background pill + a width-driven fill pill + this input) in
+   PlayerBar/NowPlayingView. */
+.seek-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+.seek-track-bg {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--surface-3);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Nested inside .seek-track-bg (not a separate sibling positioned to
+   "match" it) so it always inherits the exact same box - two
+   independently-centered elements could drift a sub-pixel apart on some
+   browsers/displays, showing as a hairline gap above/below the fill.
+   Its own border-radius rounds off wherever playback currently is (the
+   parent's overflow:hidden + radius only rounds the two fixed ends of the
+   whole track, not this dynamically-positioned edge). */
+.seek-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
+.seek-track input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  /* The generic `input, select { border; border-radius; padding; background }`
+     rule elsewhere applies to every <input> including this one - it's more
+     specific by type+class here, but only for the properties actually
+     listed in this rule, so those four still need an explicit reset or
+     the native border/padding shows through as a taller outline around
+     the fill (padding shrinks/offsets the fill's actual drawn area). */
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  /* See the note above input[type='range']::-webkit-slider-thumb - recent
+     Chromium keeps rendering its own accent-color-driven native fill even
+     with -webkit-appearance: none, which would otherwise show through
+     underneath .seek-fill. */
+  accent-color: auto;
+}
+
+/* The outline is dropped above because the box is a full-width strip behind
+   the fill; keyboard focus still needs a visible indicator (WCAG 2.4.7). */
+.seek-track input[type='range']:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.seek-track input[type='range']::-webkit-slider-runnable-track {
+  background: transparent;
+  border: none;
+  height: 100%;
+}
+
+.seek-track input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  /* Zero width so the value maps across the whole track; a 14px thumb
+     insets the clickable range by 7px each end and clicks land short. */
+  width: 0;
+  height: 14px;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.seek-track input[type='range']::-moz-range-thumb {
+  width: 0;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.seek-track input[type='range']::-moz-range-track {
+  height: 100%;
+  background: transparent;
+}
+

@@ -1,0 +1,341 @@
+/* Artist/album/song info modals (ArtistInfoModal & co.) */
+.modal-panel.info-modal {
+  max-width: 37.5rem;
+}
+
+.info-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.info-stats {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.info-section h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Facts as a key/value list: name left, value right and bold. */
+.info-facts {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.info-fact {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.info-fact dt {
+  color: var(--text-dim);
+}
+
+.info-fact dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.info-prose p {
+  margin: 0 0 0.6rem;
+  line-height: 1.55;
+  font-size: 0.92rem;
+}
+
+.info-prose .info-attribution {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.info-chips .info-chip-missing {
+  color: var(--text-dim);
+}
+
+.info-relations,
+.info-links,
+.info-candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.info-links {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+
+.info-links-inline {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.info-dim {
+  color: var(--text-dim);
+}
+
+button.info-link-btn {
+  /* 24px tall: the smallest tap target on a phone. */
+  min-height: 24px;
+  min-width: 0;
+  padding: 0;
+  color: var(--accent-text);
+  text-align: left;
+}
+
+@media (hover: hover) {
+  button.info-link-btn:hover {
+    text-decoration: underline;
+  }
+}
+
+.info-technical summary {
+  cursor: pointer;
+  color: var(--accent-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding-block: 0.3rem;
+}
+
+.info-technical .info-facts {
+  margin-top: 0.5rem;
+}
+
+.info-technical code {
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.info-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Quiet pills: Refresh, Fix match, Clear match. */
+button.info-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: var(--chip-h);
+  padding: 0 0.75rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  button.info-btn:hover:not(:disabled) {
+    background: var(--surface-3);
+  }
+}
+
+button.info-btn:disabled {
+  opacity: 0.6;
+}
+
+button.info-candidate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+button.info-candidate[aria-current='true'] {
+  border-color: var(--accent);
+}
+
+@media (hover: hover) {
+  button.info-candidate:hover:not(:disabled) {
+    background: var(--surface-3);
+  }
+}
+
+.info-candidate-name {
+  font-weight: 600;
+}
+
+.info-edition-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.info-edition-picker .select-menu-toggle {
+  width: 100%;
+  max-width: none;
+  justify-content: space-between;
+}
+
+.info-relations li[aria-current='true'] {
+  font-weight: 600;
+}
+
+/* Now Playing's ListenBrainz stats line, under the artist/album line */
+.nowplaying-stats {
+  margin-top: 0.15rem;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* Artist page "Top tracks" (TopTracks) */
+.top-tracks {
+  margin-bottom: 0.5rem;
+}
+
+.top-tracks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.top-tracks-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.top-tracks-list {
+  margin: 0;
+  padding: 0 0.5rem;
+  list-style: none;
+}
+
+.top-track-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.top-track-main {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+
+@media (hover: hover) {
+  button.top-track-main:hover {
+    background: var(--surface-2);
+  }
+}
+
+.top-track-rank {
+  flex: 0 0 1.5rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.top-track-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-track-plays {
+  flex: 0 0 auto;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.top-track-row.is-missing .top-track-main {
+  cursor: default;
+}
+
+/* Colour, not opacity, so the text keeps 4.5:1 (see .track-row-disliked). */
+.top-track-row.is-missing .top-track-rank,
+.top-track-row.is-missing .top-track-title,
+.top-track-row.is-missing .top-track-plays {
+  color: var(--text-faint);
+}
+
+.top-tracks-empty {
+  margin: 0.25rem 1rem;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.top-tracks-placeholder-note {
+  /* Three rows' worth (2.5rem each), less this line's own margins: enough
+     to soften the shift when tracks arrive without a big gap to collapse
+     when there are none. */
+  min-height: calc(3 * 2.5rem - 0.75rem);
+  padding: 0 1rem;
+}
+
+button.top-tracks-more {
+  margin: 0.25rem 0.75rem 0;
+  padding: 0 0.5rem;
+  color: var(--accent-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+@media (hover: hover) {
+  button.top-tracks-more:hover {
+    color: var(--accent-text-hover);
+  }
+}
+
+
+/* "Photo: author · licence" beside a Wikimedia Commons picture. Muted like
+   other hints (the same colour as .settings-hint, which meets 4.5:1 in both
+   themes), small, and wrapping on narrow screens. */
+.info-image-credit {
+  margin: 0.25rem 0 0;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.info-image-credit a {
+  color: inherit;
+  text-decoration: underline;
+}

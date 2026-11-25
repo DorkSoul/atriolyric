@@ -1,0 +1,286 @@
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  /* Room for the sticky chips when a chip or link scrolls here. */
+  scroll-margin-top: 3.75rem;
+}
+
+.settings-section:focus {
+  outline: none;
+}
+
+.settings-section h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.settings-section h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* A label over a group inside a card (a small caps heading). */
+.settings-section h3.settings-subhead {
+  margin: var(--space-3) 0 var(--space-2);
+  color: var(--text-faint);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-loading {
+  margin: 0;
+}
+
+.settings-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.settings-row-start {
+  justify-content: flex-start;
+}
+
+.settings-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: var(--space-3);
+}
+
+.settings-section-heading .settings-help-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  padding: 0.1rem;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-faint);
+}
+
+.settings-section-heading .settings-help-button svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+}
+
+.settings-section-heading .settings-help-button:focus-visible {
+  border-color: transparent;
+  background: var(--surface-2);
+  color: var(--accent-text);
+}
+
+@media (hover: hover) {
+  .settings-section-heading .settings-help-button:hover {
+    border-color: transparent;
+    background: var(--surface-2);
+    color: var(--accent-text);
+  }
+}
+
+.settings-hint {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin: 0 0 1rem;
+}
+
+.settings-hint-spaced {
+  margin-top: 1.25rem;
+}
+
+.settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+/* A switch label that is a sentence may wrap on a narrow card. */
+.settings-row .tab-order-visible {
+  white-space: normal;
+}
+
+.settings-row-wrap {
+  flex-wrap: wrap;
+}
+
+.settings-row > span {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.settings-segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.settings-segmented-wide {
+  width: 100%;
+}
+
+.settings-segmented button {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+}
+
+.settings-segmented button.active {
+  background: var(--accent-muted);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.accent-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.accent-swatch {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.accent-swatch-active {
+  border-color: var(--text);
+}
+
+.tab-order-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tab-order-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+
+.tab-order-label {
+  flex: 1;
+  font-size: 0.85rem;
+}
+
+.tab-order-visible {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.settings-section button {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 0.45rem 1rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (hover: hover) {
+  .settings-section button:hover {
+    background: var(--surface-3);
+    border-color: var(--border-strong);
+  }
+}
+
+/* The show-password eye sits inside its input: it stays a bare icon rather
+   than taking the section's pill fill. */
+.settings-section button.password-toggle-btn,
+.settings-section button.password-toggle-btn:hover {
+  background: none;
+  border: none;
+  padding: 0.3rem;
+}
+
+.integration-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.integration-row .badge {
+  margin-left: 0.5rem;
+}
+
+.integration-connect {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.integration-connect .settings-hint {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.integration-connect input,
+.integration-connect .password-input-wrap {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+
+.settings-disclosure {
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.settings-disclosure > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  color: var(--accent-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.settings-disclosure[open] > summary {
+  margin-bottom: var(--space-3);
+}

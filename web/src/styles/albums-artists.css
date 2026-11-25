@@ -1,0 +1,700 @@
+/* Albums / Artists */
+
+.browse-grid {
+  display: grid;
+  /* minmax(..., 1fr) stretches tiles to fill the row exactly - the tile
+     size setting picks the minimum, chosen (see settings.ts) so that
+     minimum divides an evenly-filled row into a specific tile count on a
+     phone-width screen, and proportionally more of them on a wider one. */
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--browse-tile-size, 7rem), 100%), 1fr));
+  gap: 1.25rem;
+  padding: 0.75rem;
+}
+
+/* A plain child of a grid would otherwise just occupy one cell - this
+   needs to span the whole row to act as blank vertical space above/below
+   the virtualized window, same purpose as .track-row-spacer for the
+   plain list case. */
+.browse-grid-spacer {
+  grid-column: 1 / -1;
+}
+
+.browse-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  gap: 0.5rem;
+  /* Grid items default to min-width: auto, which lets a long title's
+     intrinsic content width silently override the grid track's own
+     minmax() minimum and refuse to shrink - this is what let a long
+     album/artist name pin the tile size regardless of the "Tile size"
+     setting. Truncation (overflow/ellipsis) on the title already handles
+     the long-text case, so the item itself just needs to be free to
+     shrink to the track size. */
+  min-width: 0;
+}
+
+.browse-card .art-tile,
+.browse-card .art-wrap {
+  border-radius: 50%;
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.browse-card.browse-card-album .art-tile,
+.browse-card.browse-card-album .art-wrap,
+.browse-card.browse-card-playlist .art-tile,
+.browse-card.browse-card-playlist .art-wrap {
+  border-radius: var(--radius-md);
+}
+
+@media (hover: hover) {
+  .browse-card:hover .art-tile,
+  .browse-card:hover .art-wrap {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.browse-card:active .art-tile,
+.browse-card:active .art-wrap {
+  transform: scale(0.97);
+}
+
+.browse-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browse-subtitle {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browse-back {
+  /* Arrow icon and label on one centre line. */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--accent-text);
+  margin: 0.5rem 0 0 0.75rem;
+}
+
+.browse-back > svg {
+  flex: none;
+  font-size: 1.125em;
+}
+
+@media (hover: hover) {
+  .browse-back:hover {
+    color: var(--accent-text-hover);
+  }
+}
+
+.browse-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.browse-detail-header .browse-back {
+  flex-shrink: 0;
+  margin: 0.5rem 0 0 0.75rem;
+}
+
+.browse-detail-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+/* The hero at the top of an album / artist / playlist page:
+   224px artwork beside the name on desktop; on a phone the artwork is as
+   large as Now Playing's (min(270px, 72%)) and everything is centred. */
+.collection-detail-info {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.75rem;
+  margin: var(--space-2) 0 var(--space-6);
+  min-width: 0;
+}
+
+.collection-detail-art {
+  width: 14rem;
+  aspect-ratio: 1;
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.collection-detail-round .collection-detail-art {
+  border-radius: 50%;
+}
+
+.collection-detail-art .art-wrap,
+.collection-detail-art .art-fallback {
+  width: 100%;
+  height: 100%;
+}
+
+.collection-detail-collage {
+  position: relative;
+}
+
+.collection-detail-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.collection-detail-eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.collection-detail-copy h2 {
+  margin: 0.375rem 0;
+  font-size: clamp(1.625rem, 3.2vw, 2.625rem);
+  line-height: 1.06;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.collection-detail-copy p {
+  margin: 0.35rem 0 0;
+  color: var(--text-dim);
+  font-size: 1rem;
+}
+
+.collection-detail-copy p.collection-detail-subtitle {
+  margin-top: 0;
+}
+
+.collection-detail-copy p.collection-detail-description {
+  color: var(--text);
+  font-size: 0.875rem;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.collection-detail-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.collection-detail-fact {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.1875rem 0.5625rem;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+}
+
+.collection-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem;
+  margin-top: var(--space-4);
+}
+
+.collection-detail-actions .btn {
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+}
+
+.collection-detail-actions .btn svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.collection-detail-actions .mix-action-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.4rem;
+}
+
+.collection-heart {
+  font-size: 1.35rem;
+}
+
+@media (max-width: 639px) {
+  .collection-detail-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.875rem;
+  }
+
+  .collection-detail-art {
+    width: min(270px, 72%);
+  }
+
+  .collection-detail-copy {
+    width: 100%;
+  }
+
+  .collection-detail-copy h2 {
+    font-size: 1.5rem;
+  }
+
+  .collection-detail-facts,
+  .collection-detail-actions {
+    justify-content: center;
+  }
+
+  .collection-detail-actions {
+    margin-top: var(--space-3);
+    gap: 0.375rem;
+  }
+
+  .collection-detail-actions .btn {
+    min-height: 2.5rem;
+    padding: 0 0.875rem;
+  }
+}
+
+.playlist-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 32rem;
+  margin: 0 0 1rem;
+}
+
+.playlist-edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.playlist-edit-form textarea {
+  resize: vertical;
+  font: inherit;
+}
+
+.playlist-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.browse-icon-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.browse-sort-panel {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 0.4rem;
+  width: 12rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem;
+  box-shadow: var(--shadow-lg);
+  z-index: 20;
+}
+
+.browse-sort-panel button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  text-align: left;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+}
+
+@media (hover: hover) {
+  .browse-sort-panel button:hover {
+    background: var(--surface-3);
+    color: var(--text);
+  }
+}
+
+.browse-sort-panel button.active {
+  color: var(--accent-text);
+}
+
+.browse-sort-panel svg {
+  flex-shrink: 0;
+}
+
+/* The genre menu opens under its chip (left-aligned) and scrolls when the
+   library has many genres. */
+.browse-sort-panel.genre-menu-panel {
+  left: 0;
+  right: auto;
+  max-height: 60vh;
+  overflow-y: auto;
+  min-width: 16rem;
+}
+
+/* The search field stays at the top while the genres scroll under it. */
+.genre-menu-search {
+  position: sticky;
+  top: calc(-1 * var(--space-1));
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background: inherit;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-faint);
+}
+
+.genre-menu-search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 2rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+}
+
+.genre-menu-search input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.genre-menu-search:focus-within {
+  color: var(--accent-text);
+  border-bottom-color: var(--accent);
+}
+
+.genre-menu-empty {
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-faint);
+  font-size: 0.875rem;
+}
+
+.genre-menu-toggle {
+  max-width: 16rem;
+}
+
+.genre-menu-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The jump bar does not sit in a flex row next to the grid/list: giving it
+   its own column would shrink the grid's available width - on a
+   phone-width screen the grid's tile-size minimums are calibrated (see
+   settings.ts) to divide the *full* screen width evenly, so losing even
+   ~20px to a sibling column means one fewer column fits per row than the
+   "small"/"medium"/etc. setting is supposed to give. This zero-height
+   sticky wrapper + absolutely-positioned inner box keeps it out of that
+   flow (so it can never shrink the grid) while tracking scroll - `fixed`
+   does the same job on desktop and in Playwright's emulated mobile
+   viewports, but lands the bar half off-screen on a real phone browser
+   (see the comment on AlphabetJumpBar.tsx for why). */
+.alphabet-jump-bar {
+  position: sticky;
+  top: 0;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+  /* The letters scroll when they do not fit, and WebKit does not hit-test
+     a scroller under a zero-height sticky parent that has no stacking level of
+     its own: presses would fall through to the cards beneath. */
+  z-index: 15;
+}
+
+/* top is a small fixed offset from the sticky wrapper's own (stuck) top
+   edge, not a vh-based vertical centering - vh is relative to the whole
+   browser viewport, not .app-main's visible area below the header, so
+   "50vh, translated up by half" would land the top of the letter list (A, and
+   the "#" above it) underneath/above the header instead of at the top of
+   the actually-visible scrollable area. `height` is set inline per-device
+   (see AlphabetJumpBar.tsx) so all 27 letters actually fit in whatever
+   vertical space is visible - each letter is flex:1 (see below) so the
+   27 of them *share* that height instead of each keeping its own natural
+   size and simply overflowing past the bottom once their total exceeds
+   what's available (which `justify-content` alone doesn't prevent - it
+   only spaces items out when there's extra room, it doesn't shrink them
+   when there isn't). */
+.alphabet-jump-bar-inner {
+  position: absolute;
+  /* `top` is set inline (see AlphabetJumpBar.tsx). Pulled out over .app-main's
+     0.5rem side padding, so the strip hugs the screen edge and the room the
+     grids and lists reserve for it (1.75rem) covers all of it. */
+  right: -0.45rem;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  z-index: 15;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+/* No background/border - it overlaps the grid's rightmost column rather
+   than reserving space from it (see the comment above), so it needs to
+   stay legible over arbitrary art thumbnails without visually blocking
+   them the way a solid panel would. The text-shadow acts as a soft
+   outline for contrast in place of a background. Kept as small/narrow as
+   still-tappable allows (small font, minimal padding, hugging the true
+   edge) - on a narrow phone at 4 columns there's very little clear margin
+   before card titles start, so the less width this needs, the less of
+   that text it sits over.
+   flex: 1 + min-height: 0 - without min-height: 0, a flex item's default
+   min-height is its own content size, which blocks it from ever shrinking
+   below that (which would let 27 fixed-size buttons overflow past the
+   bottom); flex: 1 then makes all 27 share the
+   available height equally. */
+.alphabet-jump-letter {
+  /* A 24 px target (the letter itself stays small); AlphabetJumpBar.tsx sets
+     --alphabet-letter-min a little lower when that is what lets all 27 fit,
+     and the strip scrolls on a screen too short even for that. */
+  flex: 1 0 var(--alphabet-letter-min, 1.5rem);
+  min-height: var(--alphabet-letter-min, 1.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+  min-width: 1.5rem;
+  padding: 0;
+  color: var(--accent-text);
+  text-shadow:
+    0 0 3px var(--bg),
+    0 0 3px var(--bg),
+    0 0 3px var(--bg);
+  border-radius: 4px;
+}
+
+.alphabet-jump-letter:disabled {
+  color: var(--border-strong);
+}
+
+@media (hover: hover) {
+  .alphabet-jump-letter:not(:disabled):hover {
+    background: var(--surface-2);
+  }
+}
+
+/* Desktop: the letters sit in the page toolbar right after the genre picker
+   (the toolbar is what stays at the top while the list moves under it). */
+.alphabet-jump-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  /* Takes the room left on the genre picker's line and wraps its letters
+     inside it, instead of dropping to a line of its own as one wide block. */
+  flex: 10 1 0;
+  min-width: min(100%, 16rem);
+}
+
+.page-toolbar:has(> .alphabet-jump-row) {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  padding: var(--space-1) 0;
+  background: var(--bg);
+}
+
+.alphabet-jump-row .alphabet-jump-letter {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  font-size: 0.75rem;
+  text-shadow: none;
+  border-radius: 5px;
+}
+
+.alphabet-jump-row .alphabet-jump-letter:disabled {
+  opacity: 1;
+}
+
+.browse-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.75rem;
+}
+
+.browse-list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+  border-radius: var(--radius-sm);
+}
+
+@media (hover: hover) {
+  .browse-list-row:hover {
+    background: var(--surface-2);
+  }
+}
+
+.browse-list-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* An album tile's owner line, outside the tile's button so its artist
+   links work (see AlbumsView albumSubtitle). */
+.more-card-wrap > .browse-subtitle-links {
+  margin-top: 0.15rem;
+  /* The tile button's side padding, so the owner line starts under the
+     title, not 6px left of it. */
+  padding-inline: 6px;
+}
+
+.artist-album-section {
+  margin-top: 0.75rem;
+}
+
+.artist-section-heading {
+  margin: 0.75rem 0.75rem 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.browse-nested-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem 0;
+}
+
+/* Header-anchored sort/layout controls (see headerControlsPortal.tsx) */
+
+.browse-sort-toggle {
+  position: relative;
+}
+
+
+/* The Albums / Artists page: its toolbar and A-Z row line up with the grid,
+   which keeps its own 0.75rem padding (GRID_TILE_REMS is tuned to it). */
+.browse-page {
+  padding-top: 1rem;
+}
+
+.browse-page > .page-toolbar {
+  margin-inline: 0.75rem;
+}
+
+.browse-page > .page-toolbar {
+  margin-bottom: var(--space-2);
+}
+
+.browse-card {
+  gap: 0.125rem;
+}
+
+.browse-card .art-tile,
+.browse-card .art-wrap {
+  margin-bottom: 0.375rem;
+}
+
+/* List mode: art, name, details; quieter rows. */
+.browse-list-row {
+  min-height: 3rem;
+  padding: 0.375rem 0.625rem;
+  gap: 0.75rem;
+}
+
+.browse-list-row .appearance-list-art {
+  border-radius: 4px;
+}
+
+.browse-list-row .art-wrap {
+  flex: none;
+}
+
+[data-density='compact'] .browse-list-row {
+  min-height: 2.25rem;
+  padding-block: 0.125rem;
+}
+
+[data-density='compact'] .browse-list-row .appearance-list-art {
+  width: calc(var(--list-art-size, 2.5rem) * 0.75);
+  height: calc(var(--list-art-size, 2.5rem) * 0.75);
+}
+
+/* The artist / album page toolbar (order, Grid / List, Show missing). */
+.browse-nested-toolbar {
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 0.75rem;
+  margin: 0 0 var(--space-2);
+}
+
+.browse-nested-toolbar .page-toolbar-gap {
+  flex: 1;
+}
+
+.artist-section-heading {
+  margin: var(--space-6) 0.75rem var(--space-1);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.collection-detail {
+  padding: var(--space-4) 0.75rem 0;
+}
+
+@media (max-width: 639px) {
+  .browse-page {
+    padding-top: 0.5rem;
+  }
+
+  /* Room on the right for the A-Z rail beside list rows (the grid keeps
+     its width: the rail overlays it, as GRID_TILE_REMS assumes). */
+  .browse-page .browse-list {
+    padding-right: 1.75rem;
+  }
+
+  /* The same room beside grid tiles, so no tile control sits under the rail.
+     0.75rem + 1.75rem is within the slack GRID_TILE_REMS leaves: the column
+     counts at 390 and 320 px wide are unchanged. */
+  .browse-with-jump-bar .browse-grid {
+    padding-right: 1.75rem;
+  }
+
+  .collection-detail {
+    padding-top: var(--space-2);
+  }
+}
+
+.switch.show-missing-toggle {
+  gap: var(--space-2);
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}

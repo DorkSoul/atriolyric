@@ -1,0 +1,165 @@
+/* Both the Home rail's and the Playlists tab's Generated heading's Specify
+ * mix trigger - same look in either row. */
+.home-rail-specify,
+.specify-mix-trigger {
+  color: var(--accent-text);
+  font-size: 0.8rem;
+}
+
+.modal-panel.specify-mix-dialog {
+  max-width: 37.5rem;
+  max-height: min(88vh, 40rem);
+  max-height: min(88dvh, 40rem);
+}
+
+@media (max-width: 639px) {
+  .modal-panel.specify-mix-dialog {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+}
+
+.specify-mix-dialog .settings-hint {
+  margin: 0;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.specify-mix-search {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-h);
+  flex-shrink: 0;
+}
+
+/* The genres and tags as tiles in an even grid (rows as tall as their
+   tallest name), coloured like chips: tap to include (accent),
+   again to exclude (struck through in red), a third time to clear. */
+.specify-mix-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* max-content, not auto: with auto the rows shrink to fit the dialog's
+     height and wrapped names spill out of their tiles; the grid scrolls. */
+  grid-auto-rows: max-content;
+  align-items: stretch;
+  align-content: start;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.15rem;
+}
+
+@media (min-width: 34rem) {
+  .specify-mix-options {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.specify-mix-options button {
+  height: auto;
+  min-height: 3.6rem;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.9rem 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.specify-mix-options button > span {
+  color: var(--text);
+  line-height: 1.3;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  min-width: 0;
+  white-space: normal;
+}
+
+.specify-mix-options small {
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.specify-mix-options button.is-include {
+  border-color: var(--accent);
+  background: var(--accent-muted);
+}
+
+.specify-mix-options button.is-include > span,
+.specify-mix-options button.is-include small {
+  color: var(--accent-text);
+}
+
+.specify-mix-options button.is-exclude {
+  border-color: var(--danger);
+  background: transparent;
+}
+
+.specify-mix-options button.is-exclude > span,
+.specify-mix-options button.is-exclude small {
+  text-decoration: line-through;
+  color: var(--danger-text);
+}
+
+@media (hover: hover) {
+  .specify-mix-options button:hover:not(.is-include):not(.is-exclude) {
+    border-color: var(--accent);
+    background: var(--surface-2);
+  }
+}
+
+.specify-mix-options small .mix-detail-count {
+  display: none;
+}
+
+/* Phones: chips are narrow, so show only the count. */
+@media (max-width: 639px) {
+  .specify-mix-options small .mix-detail-full {
+    display: none;
+  }
+
+  .specify-mix-options small .mix-detail-count {
+    display: inline;
+  }
+}
+
+.specify-mix-footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  padding-top: 0.5rem;
+  background: var(--surface);
+}
+
+.specify-mix-footer button {
+  min-height: 2.75rem;
+  padding: 0 1.5rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+}
+
+.specify-mix-footer button:disabled {
+  opacity: 0.45;
+}
+
+.specify-mix-empty {
+  color: var(--text-dim);
+  margin: 0.5rem 0;
+  text-align: center;
+}

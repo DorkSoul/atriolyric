@@ -1,0 +1,331 @@
+/* Player bar: the mini player along the bottom, below 1200px wide (the side
+   panel, side-panel.css, takes its place above that). Edge to edge, a thin
+   seek line across its top edge, then three parts:
+     art + title/artist + heart | previous / play / next | volume + device
+   On a phone the third part goes (the device picker moves to the top bar)
+   and the controls sit at the right end of the one row. */
+
+.player-bar {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas: 'track controls extras';
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 4.25rem;
+  padding: 0.625rem 1.25rem;
+  background: var(--surface);
+  border-top: 4px solid var(--surface-3);
+}
+
+.player-bar-empty {
+  display: flex;
+  justify-content: center;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+}
+
+.player-empty-text {
+  min-width: 0;
+}
+
+.player-bar-empty .player-extras {
+  margin-left: auto;
+}
+
+.player-bar-radio {
+  border-top: 1px solid var(--border);
+}
+
+/* The seek line sits on the bar's top border; its hit area is larger, so it
+   is practical to grab on a touch screen. */
+.player-progress-track {
+  position: absolute;
+  z-index: 5;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 22px;
+  cursor: pointer;
+  touch-action: none;
+  outline: none;
+}
+
+.player-progress-track::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--surface-3);
+  pointer-events: none;
+}
+
+.player-progress-track:focus-visible::before {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.player-progress-fill {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: var(--accent);
+  pointer-events: none;
+  transition: width 0.25s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-progress-fill {
+    transition: none;
+  }
+}
+
+.player-seek-tooltip {
+  position: absolute;
+  z-index: 2;
+  top: -3.25rem;
+  transform: translateX(-50%);
+  padding: 0.4rem 0.8rem;
+  color: var(--text);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.player-seek-tooltip-arrow,
+.player-seek-tooltip-arrow-inner {
+  position: absolute;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.player-seek-tooltip-arrow {
+  bottom: -10px;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 10px solid var(--border);
+}
+
+.player-seek-tooltip-arrow-inner {
+  bottom: -8px;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 9px solid var(--surface-3);
+}
+
+.player-art-btn {
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: var(--radius-sm);
+}
+
+.player-bar .art-sm {
+  width: 3rem;
+  height: 3rem;
+}
+
+.player-track-info {
+  grid-area: track;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.player-info-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.player-bar .track-title {
+  font-weight: 600;
+}
+
+.player-bar .track-subtitle {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+}
+
+.player-controls {
+  grid-area: controls;
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  gap: 0.375rem;
+}
+
+.player-controls button {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--text-dim);
+}
+
+.player-controls .player-play-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 1.2rem;
+}
+
+@media (hover: hover) {
+  .player-controls button:not(.player-play-btn):hover {
+    color: var(--text);
+    background: var(--surface-2);
+  }
+}
+
+.player-controls button:active {
+  transform: scale(0.92);
+}
+
+.player-pref-btn {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--text-dim);
+  font-size: 1.2rem;
+}
+
+.player-pref-btn.active {
+  color: var(--accent-text);
+}
+
+@media (hover: hover) {
+  .player-pref-btn:hover {
+    color: var(--text);
+    background: var(--surface-2);
+  }
+}
+
+.player-extras {
+  grid-area: extras;
+  align-items: center;
+  justify-self: end;
+  display: flex;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.player-volume {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-dim);
+}
+
+.player-volume input {
+  width: 6rem;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.player-time {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  width: 2.5rem;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 640-999px: the page column is narrow; a shorter volume slider. */
+@media (max-width: 999px) {
+  .player-bar {
+    gap: var(--space-3);
+    padding-inline: var(--space-4);
+  }
+
+  .player-volume input {
+    width: 4.5rem;
+  }
+}
+
+/* Phone: one row, controls at the right end. */
+@media (max-width: 639px) {
+  .player-bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'track controls';
+    gap: var(--space-2);
+    min-height: 0;
+    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+    border-top-width: 3px;
+  }
+
+  /* Not rendered on a phone; hidden too for the moment a resize takes to
+     reach React, so the row never grows an extra column. */
+  .player-extras {
+    display: none;
+  }
+
+  .player-bar-empty {
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  .player-progress-track {
+    top: -3px;
+  }
+
+  .player-progress-track::before,
+  .player-progress-fill {
+    height: 3px;
+  }
+
+  .player-bar .art-sm {
+    width: 2.625rem;
+    height: 2.625rem;
+  }
+
+  .player-track-info {
+    gap: 0.625rem;
+  }
+
+  .player-controls {
+    gap: 0;
+  }
+
+  .player-controls button,
+  .player-controls .player-play-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--text);
+    font-size: 1.4rem;
+  }
+
+  .player-controls .player-play-btn {
+    background: none;
+    font-size: 1.5rem;
+  }
+}
+
+/* Very narrow phones: the heart gives its room to the title (it stays in
+   Now Playing and the track menus). */
+@media (max-width: 359px) {
+  .player-bar .player-track-info > .player-pref-btn {
+    display: none;
+  }
+}

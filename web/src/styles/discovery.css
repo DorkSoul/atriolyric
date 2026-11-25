@@ -1,0 +1,101 @@
+/* Discovery */
+
+.discovery-refresh {
+  margin-bottom: 1rem;
+}
+
+.mix-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.mix-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--text);
+  font-size: 2rem;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+@media (hover: hover) {
+  .mix-action-btn:hover:not(:disabled) {
+    background: none;
+    color: var(--accent-text);
+  }
+}
+
+.mix-action-btn.active {
+  color: var(--accent-text);
+}
+
+.mix-action-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.discovery-refresh button {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 0.5rem 0.9rem;
+}
+
+@media (hover: hover) {
+  .discovery-refresh button:hover {
+    background: var(--surface-3);
+    border-color: var(--border-strong);
+  }
+}
+
+.discovery-refresh.playlist-add-more {
+  margin-top: 1.25rem;
+}
+
+.discovery-refresh.playlist-add-more button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .discovery-refresh.playlist-add-more button:hover:not(:disabled) {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+}
+
+.discovery-refresh.playlist-add-more button:disabled {
+  opacity: 0.6;
+}
+
+.discovery-status {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.queue-context-note {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin: -0.25rem 0 0.5rem;
+}
+
+.generate-status {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0.75rem;
+}
+

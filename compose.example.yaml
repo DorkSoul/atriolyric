@@ -1,0 +1,32 @@
+# Atriolyric. Copy this file to a folder of its own as compose.yaml, change
+# the music path below, then run: docker compose up -d
+# Open http://<this machine's address>:8030 and follow the setup screen.
+services:
+  atriolyric:
+    image: ghcr.io/dorksoul/atriolyric:latest
+    container_name: atriolyric
+    restart: unless-stopped
+    ports:
+      - "8030:8000"
+    volumes:
+      # The app's database and caches. Created next to this file.
+      - ./data:/data
+      # Your music (and videos). Change the part before the colon to the
+      # folder on this machine. Add as many lines as you like, each with its
+      # own name after /media/, and add them as library folders in the app.
+      - /path/to/your/music:/media/music
+
+    # Everything below is optional. Remove the # in front of a line to use it.
+    # environment:
+    #   # Your time zone, for times shown in the logs.
+    #   TZ: Europe/London
+    #   # Run as this host user and group instead of 1000:1000, so the app can
+    #   # read your media folders (`id` on the host shows yours).
+    #   PUID: "1000"
+    #   PGID: "1000"
+    # Hardware video transcoding on an Intel/AMD iGPU. The group is the
+    # host's render group id (`getent group render | cut -d: -f3`).
+    # devices:
+    #   - /dev/dri:/dev/dri
+    # group_add:
+    #   - "105"

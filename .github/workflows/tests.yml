@@ -1,0 +1,158 @@
+name: Tests
+
+# Runs on pull requests into master only, to keep Actions minutes low. Run
+# the same checks locally before opening one (see the README, "Running the
+# tests"): scripts/local-gate.sh runs all of them.
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Actions are pinned by commit so a moved tag cannot change what runs here.
+jobs:
+  backend:
+    name: Backend (lint, types, tests, audit)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: "0.13.1"
+
+      # Some tests exercise real ffmpeg/ffprobe; they skip themselves without it.
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Lint
+        run: uv run --frozen ruff check .
+
+      - name: Type-check
+        run: uv run --frozen pyright
+
+      # The coverage floor lives in pyproject.toml ([tool.coverage.report]).
+      - name: Tests
+        run: uv run --frozen pytest -m "not network" --cov=app
+
+      - name: Dependency audit
+        run: |
+          uv export --frozen --no-dev --no-emit-project --format requirements-txt -o "$RUNNER_TEMP/requirements.txt"
+          uvx pip-audit@2.10.1 -r "$RUNNER_TEMP/requirements.txt" --require-hashes --disable-pip
+
+  web:
+    name: Web (build, lint, audit)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      # The API types are generated from the server's OpenAPI document,
+      # which needs the server's locked environment.
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: "0.13.1"
+
+      - name: Backend dependencies
+        working-directory: server
+        run: uv sync --frozen
+
+      - run: npm ci
+
+      - name: Check the generated API types are up to date
+        run: |
+          npm run gen:api-types
+          if ! git diff --exit-code -- src/api-types.ts; then
+            echo "::error file=web/src/api-types.ts::web/src/api-types.ts is stale. Run 'npm run gen:api-types' in web/ and commit the result."
+            exit 1
+          fi
+
+      # `tsc -b` type-checks the app, the config and the e2e tests.
+      - run: npm run build
+
+      - run: npm run lint
+
+      - run: npm run audit:deps
+
+  e2e:
+    name: End-to-end (Chromium)
+    runs-on: ubuntu-latest
+    # The image version must match the `playwright` version in
+    # web/package-lock.json; the first step fails if it does not.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    env:
+      CI: "true"
+      # Firefox refuses to start when $HOME is not owned by the current user.
+      HOME: /root
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - run: npm ci
+
+      - name: Check the Playwright image matches the installed version
+        run: |
+          installed=$(node -p "require('playwright/package.json').version")
+          if [ "$installed" != "1.62.1" ]; then
+            echo "::error::playwright $installed is installed but the job uses the v1.62.1 image. Update the container image tag in this workflow."
+            exit 1
+          fi
+
+      - run: npx playwright test --project=chromium
+
+  real-e2e:
+    name: Real end-to-end (two devices, real backend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: "0.13.1"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Backend dependencies
+        working-directory: server
+        run: uv sync --frozen
+
+      - name: Web dependencies and Chromium
+        working-directory: web
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      # The real web app against the real backend, two browser contexts as
+      # two devices, nothing mocked: the only suite that exercises the
+      # playback protocol end to end.
+      - name: Real two-device suite
+        working-directory: web
+        run: npm run test:real

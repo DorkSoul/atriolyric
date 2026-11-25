@@ -1,0 +1,93 @@
+/* "Update available" prompt: stays until the user restarts or dismisses it. */
+
+.update-prompt {
+  position: fixed;
+  left: 50%;
+  top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+  transform: translateX(-50%);
+  z-index: 210;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.9rem;
+  width: min(calc(100vw - 24px), 26rem);
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  box-shadow: var(--shadow-md);
+  font-size: 0.875rem;
+  animation: toast-in 150ms ease;
+}
+
+.update-prompt-text {
+  flex: 1 1 12rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.update-prompt-text span {
+  color: var(--text-dim);
+}
+
+.update-prompt-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.update-prompt-actions button {
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Later: a quiet pill; Restart: the accent pill. */
+.update-prompt-later {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-full);
+  color: var(--text);
+}
+
+.update-prompt-restart {
+  background: var(--accent);
+  border-radius: var(--radius-full);
+  color: var(--on-accent);
+  font-weight: 700 !important;
+}
+
+@media (hover: hover) {
+  .update-prompt-later:hover {
+    background: var(--surface-3);
+  }
+
+  .update-prompt-restart:hover {
+    background: var(--accent-hover);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.want-list-badge {
+  margin-left: 0.5rem;
+  color: var(--accent-text);
+}
+
+.want-list-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+

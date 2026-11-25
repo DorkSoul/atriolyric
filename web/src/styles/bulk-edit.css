@@ -1,0 +1,72 @@
+/* Bulk selection / tag editing */
+
+/* "3 selected" with its actions: an accent-tinted bar that
+   stays at the top of the scroller while the list moves under it. */
+.bulk-action-bar {
+  position: sticky;
+  top: 0;
+  z-index: 16;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-bottom: var(--space-2);
+  padding: 0.5rem 0.75rem;
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg));
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.bulk-action-bar > span {
+  margin-right: auto;
+}
+
+.bulk-action-bar button {
+  min-height: var(--chip-h);
+  padding: 0 0.75rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .bulk-action-bar button:hover:not(:disabled) {
+    background: var(--surface-3);
+  }
+}
+
+.tag-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tag-edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.tag-edit-form input {
+  font-size: 0.95rem;
+}
+
+.tag-edit-form button {
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: 0.65rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .tag-edit-form button:hover {
+    background: var(--accent-hover);
+  }
+}
+

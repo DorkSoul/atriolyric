@@ -1,0 +1,43 @@
+{
+  "name": "web",
+  "private": true,
+  "version": "1.0.0",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "build:shell": "tsc -b && vite build --config vite.shell.config.ts",
+    "lint": "oxlint",
+    "gen:api-types": "node scripts/gen-api-types.mjs",
+    "audit:deps": "node scripts/audit.mjs",
+    "test:e2e": "playwright test",
+    "test:real": "playwright test -c playwright.real.config.ts",
+    "test:android": "playwright test -c playwright.android.config.ts",
+    "test:app": "playwright test -c playwright.app.config.ts",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "hls.js": "1.7.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "openapi-typescript": "7.13.0",
+    "oxlint": "^1.93.0",
+    "playwright": "^1.62.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.8"
+  },
+  "overrides": {
+    "openapi-typescript": {
+      "typescript": "$typescript"
+    }
+  }
+}

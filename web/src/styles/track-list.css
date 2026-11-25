@@ -1,0 +1,455 @@
+/* Track list */
+
+.track-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: var(--radius-sm);
+  position: relative;
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+@media (hover: hover) {
+  .track-row:hover {
+    background: var(--surface);
+  }
+}
+
+/* The song playing now. */
+.track-row-current {
+  background: var(--accent-muted);
+}
+
+.track-row-current .track-title {
+  color: var(--accent-text);
+}
+
+@media (hover: hover) {
+  .track-row-current:hover {
+    background: var(--accent-muted);
+  }
+}
+
+.track-row-selected {
+  background: var(--accent-muted);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+@media (hover: hover) {
+  .track-row-selected:hover {
+    background: var(--accent-muted);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+}
+
+.track-row-selected .art-xs {
+  outline: 2px solid var(--accent-text);
+}
+
+.track-row .appearance-list-art {
+  border-radius: 4px;
+}
+
+/* The Songs table (desktop width): title (with art), artist, album, time,
+   heart, menu, under a header row. */
+.track-table-head,
+.track-list-table .track-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 3.5rem 2.5rem 2.5rem;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* The Songs tab adds Year and Plays before Time where the list is wide
+   enough (TrackList's STATS_MIN_WIDTH_PX). */
+.track-table-head.track-table-stats,
+.track-list-table.track-table-stats .track-row {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 3rem 3rem 3.5rem 2.5rem 2.5rem;
+}
+
+.track-col-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.track-table-head {
+  min-height: 2rem;
+  padding: 0 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.25rem;
+}
+
+.track-table-head .track-col-title {
+  padding-left: calc(var(--list-art-size, 2.5rem) + 0.6rem);
+}
+
+[data-density='compact'] .track-table-head .track-col-title {
+  padding-left: calc(var(--list-art-size, 2.5rem) * 0.75 + 0.6rem);
+}
+
+.track-col {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+}
+
+.track-col .library-links a,
+.track-col .library-links .library-link-button {
+  color: var(--text-dim);
+}
+
+.track-col-time {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.track-table-head .track-col-time {
+  text-align: right;
+}
+
+.track-list-table .track-row .track-title-btn {
+  min-width: 0;
+}
+
+/* Song cards: two columns on a desktop-width screen, one on a phone. No row
+   gap: the virtual window counts a row of cards as one card's height. */
+.track-list-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1.25rem;
+}
+
+.track-list-cards .track-row-spacer {
+  grid-column: 1 / -1;
+}
+
+.track-row.track-card {
+  min-height: 3.875rem;
+  padding: 0.25rem 0.5rem;
+  min-width: 0;
+}
+
+.track-card .appearance-list-art {
+  width: 3rem;
+  height: 3rem;
+}
+
+@media (max-width: 639px) {
+  .track-list-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .track-row.track-card {
+    padding: 0.25rem 0;
+  }
+}
+
+/* Compact density (settings.listDensity): shorter rows, smaller art. */
+[data-density='compact'] .track-row {
+  min-height: 2.25rem;
+  padding-block: 0.125rem;
+}
+
+[data-density='compact'] .track-row .appearance-list-art {
+  width: calc(var(--list-art-size, 2.5rem) * 0.75);
+  height: calc(var(--list-art-size, 2.5rem) * 0.75);
+}
+
+[data-density='compact'] .track-row .track-title-btn {
+  padding: 0.125rem 0;
+}
+
+[data-density='compact'] .track-row.track-card {
+  min-height: 3rem;
+}
+
+[data-density='compact'] .track-card .appearance-list-art {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+[data-density='compact'] .track-row .favorite-btn,
+[data-density='compact'] .track-row .track-menu > button {
+  min-height: 2rem;
+  min-width: 2rem;
+}
+
+.track-title-btn {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.25rem 0;
+}
+
+/* The play/select button is an overlay filling .track-title-btn, so the art,
+   title and artist/album links are its siblings rather than its content (a
+   link cannot nest in a button). Everything after the overlay lets presses
+   through to it, except the links, which sit above it. */
+.track-title-btn {
+  position: relative;
+}
+
+.track-play-btn {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+}
+
+.track-play-btn ~ * {
+  pointer-events: none;
+}
+
+.track-play-btn ~ * a,
+.track-play-btn ~ * .library-link-button {
+  position: relative;
+  pointer-events: auto;
+}
+
+.track-title-text {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.track-title {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.track-subtitle {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.library-links a,
+.library-link-button {
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.library-link-button {
+  display: inline;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.library-links a:focus-visible,
+.library-link-button:focus-visible {
+  text-decoration: underline;
+}
+
+@media (hover: hover) {
+  .library-links a:hover,
+  .library-link-button:hover {
+    text-decoration: underline;
+  }
+}
+
+.artist-picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.artist-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+}
+
+.artist-picker-row:focus-visible {
+  outline: 2px solid var(--accent-text);
+}
+
+@media (hover: hover) {
+  .artist-picker-row:hover {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+}
+
+.artist-picker-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.artist-picker-role {
+  flex: none;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--accent);
+  color: var(--accent-text);
+  font-size: 0.72rem;
+}
+
+.favorite-btn {
+  color: var(--text-faint);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.favorite-active {
+  color: var(--danger);
+}
+
+/* The heart's disliked state: a broken heart in a muted colour. */
+.favorite-btn.preference-disliked,
+.nowplaying-toggle-btn.preference-disliked,
+.player-controls .player-pref-btn.preference-disliked,
+.player-extras .player-pref-btn.preference-disliked {
+  color: var(--text-faint);
+}
+
+/* A song left out of mixes - disliked itself, or through its album or
+   artist. Only the title side dims; the heart stays readable to undo it. */
+.track-row-disliked .track-title-btn .art-wrap {
+  opacity: 0.5;
+}
+
+/* Text dims by colour rather than opacity, which would have pulled the
+   subtitle under 3:1; --text-faint keeps 4.5:1 and still reads as muted
+   next to the normal title colour. */
+.track-row-disliked .track-title,
+.track-row-disliked .track-subtitle,
+.track-row-disliked .library-links a,
+.track-row-disliked .library-link-button {
+  color: var(--text-faint);
+}
+
+.track-menu {
+  position: relative;
+}
+
+.track-menu-panel {
+  /* Positioned via inline style (left/top), anchored to the click/touch
+     point that opened it - see TrackMenuPanel. */
+  position: fixed;
+  z-index: 210;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  min-width: 10rem;
+  width: max-content;
+  max-width: min(22rem, 90vw);
+  max-height: min(24rem, 70vh);
+  max-height: min(24rem, 70dvh);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.track-menu-panel button {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  flex: 0 0 auto;
+  height: auto;
+  min-height: 2.25rem;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  border-radius: var(--radius-sm);
+}
+
+@media (hover: hover) {
+  .track-menu-panel button:hover {
+    background: var(--surface-3);
+  }
+}
+
+.track-menu-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0 !important;
+  margin-bottom: 0.2rem;
+  padding-bottom: 0.5rem !important;
+}
+
+.track-menu-empty {
+  padding: 0.5rem 0.6rem;
+  color: var(--text-dim);
+}
+
+
+/* Phone: room on the right for the A-Z rail (AlphabetJumpBar) beside the
+   Songs rows, so it never sits over their menu buttons. */
+@media (max-width: 639px) {
+  .songs-view:not(.recent-view) .track-list {
+    padding-right: 1.5rem;
+  }
+}
+
+.songs-view {
+  padding: 1rem 0.75rem 0;
+}
+
+@media (max-width: 639px) {
+  .songs-view {
+    padding: 0.5rem 0.5rem 0;
+  }
+}
+
+/* Compact density for the queue (Now Playing, side panel). */
+[data-density='compact'] .queue-row {
+  min-height: 2.5rem;
+  padding-block: 0.125rem;
+}
+
+[data-density='compact'] .queue-row .art-xs {
+  width: 2rem;
+  height: 2rem;
+}

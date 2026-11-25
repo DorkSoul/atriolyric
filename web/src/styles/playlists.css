@@ -1,0 +1,208 @@
+/* Playlists (list and playlist page): the
+   "Your playlists" / "Generated" sections, create row and card wall. */
+
+.playlists-view {
+  /* .app-main leaves the last 0.75rem of the page gutter to the view. */
+  padding-inline: 0.75rem;
+  padding-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* Section heads: .sec-h (20px/700), overriding home.css's
+   small-caps .tab-section-heading on this tab. */
+.playlists-view .sec-head.playlists-heading {
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.playlists-view .sec-head.playlists-heading h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--text);
+}
+
+.playlists-view .sec-head.tab-section-heading {
+  margin-top: var(--space-6);
+}
+
+.playlists-view .page-toolbar {
+  margin-bottom: var(--space-2);
+}
+
+.playlist-create {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  min-width: 0;
+}
+
+.playlist-create input {
+  flex: 1;
+  min-width: 0;
+  height: var(--control-h);
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+
+.playlist-create .btn {
+  flex: none;
+}
+
+.playlists-view .browse-grid {
+  padding: 0;
+  gap: 1.375rem 1rem;
+}
+
+.playlists-view .empty {
+  color: var(--text-dim);
+  margin: 0 0 var(--space-2);
+}
+
+.browse-card-playlist {
+  position: relative;
+}
+
+.browse-card-playlist .browse-title {
+  font-size: 0.9375rem;
+}
+
+.browse-card-playlist .browse-subtitle {
+  font-size: 0.8125rem;
+}
+
+.playlist-collage-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.browse-card-main {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  gap: 0.375rem;
+  width: 100%;
+  padding: 0;
+}
+
+.browse-card-main .art-tile {
+  margin-bottom: 0.125rem;
+}
+
+.browse-card-delete {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.375rem;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  border-radius: var(--radius-full);
+  width: 1.875rem;
+  height: 1.875rem;
+  min-width: 1.875rem;
+  min-height: 1.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+@media (hover: hover) {
+  .browse-card-delete:hover {
+    background: var(--danger);
+  }
+
+  /* Quiet until the card is pointed at (the more menu also has Delete). */
+  .browse-card-playlist > .browse-card-delete {
+    opacity: 0;
+  }
+
+  .browse-card-playlist:hover > .browse-card-delete,
+  .browse-card-playlist > .browse-card-delete:focus-visible {
+    opacity: 1;
+  }
+}
+
+/* Playlist page: lined up with the hero (.collection-detail pads 0.75rem). */
+.playlist-page > .playlist-tools,
+.playlist-page > .playlist-edit-form,
+.playlist-page > .discovery-status,
+.playlist-page > .empty,
+.playlist-page > .playlist-reorder-list {
+  margin-inline: 0.75rem;
+}
+
+/* Playlist page: the row under the hero (auto-managed note, Add more tracks,
+   Export .m3u), and the hero's smaller tool buttons. */
+.playlist-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin: 0 0 var(--space-4);
+  min-width: 0;
+}
+
+.playlist-tools .discovery-status {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+  min-width: 0;
+}
+
+.playlist-tool-btn {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+}
+
+.playlist-tool-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.playlist-tool-btn.active,
+.playlist-tool-btn[aria-pressed='true'] {
+  background: var(--accent-muted);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.collection-detail-actions .btn.active {
+  box-shadow: inset 0 0 0 2px var(--accent-text);
+}
+
+.playlist-export-link {
+  font-size: 0.8125rem;
+}
+
+.playlist-edit-form input,
+.playlist-edit-form textarea {
+  background: var(--surface);
+}
+
+@media (max-width: 639px) {
+  .playlist-create {
+    gap: var(--space-2);
+  }
+
+  .playlists-view .browse-grid {
+    gap: 0.875rem 0.625rem;
+  }
+
+  .playlist-tools .page-toolbar-gap {
+    display: none;
+  }
+
+  .playlist-tools .discovery-status {
+    flex: 1 1 100%;
+  }
+}

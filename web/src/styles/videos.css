@@ -1,0 +1,233 @@
+/* Videos */
+
+.hidden {
+  display: none !important;
+}
+
+.video-grid {
+  display: grid;
+  /* minmax(..., 1fr) stretches tiles to fill the row exactly - the tile
+     size setting picks the minimum, chosen (see settings.ts) so that
+     minimum divides an evenly-filled row into a specific tile count on a
+     phone-width screen, and proportionally more of them on a wider one. */
+  grid-template-columns: repeat(auto-fill, minmax(var(--video-tile-size, 7.25rem), 1fr));
+  gap: 1.375rem 1rem;
+  padding: 0;
+}
+
+.video-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  gap: 0.4rem;
+  min-width: 0; /* see .browse-card for why this is needed */
+}
+
+.video-card {
+  position: relative;
+}
+
+.video-play-btn {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+}
+
+.video-play-btn ~ * {
+  pointer-events: none;
+}
+
+.video-play-btn ~ * .more-btn,
+.video-play-btn ~ * a,
+.video-play-btn ~ * .library-link-button {
+  position: relative;
+  pointer-events: auto;
+}
+
+.video-play-btn ~ .video-thumb-wrap > .more-btn {
+  position: absolute;
+}
+
+.video-play-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.video-card:active .video-thumb-wrap {
+  transform: scale(0.97);
+}
+
+.video-thumb-wrap {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+@media (hover: hover) {
+  .video-card:hover .video-thumb-wrap {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.video-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-thumb-fallback {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+.video-duration {
+  position: absolute;
+  right: 0.375rem;
+  bottom: 0.375rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 4px;
+}
+
+.video-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.video-card .track-subtitle {
+  font-size: 0.8125rem;
+}
+
+/* The Videos tab: "Folders" as tiles,
+   then the video wall. */
+.videos-view {
+  /* .app-main leaves the last 0.75rem of the page gutter to the view. */
+  padding-inline: 0.75rem;
+  padding-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.videos-view > .home-section-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.videos-section {
+  min-width: 0;
+}
+
+.videos-section .sec-head h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.browse-grid.video-folder-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(14.5rem, 100%), 1fr));
+  gap: 0.625rem;
+  padding: 0;
+}
+
+.browse-card.video-folder-tile {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+
+@media (hover: hover) {
+  .browse-card.video-folder-tile:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-2);
+  }
+}
+
+.video-folder-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--surface-3);
+  color: var(--accent-text);
+  font-size: 1.2rem;
+  overflow: hidden;
+}
+
+.browse-card.video-folder-tile .video-folder-icon .art-wrap,
+.browse-card.video-folder-tile .video-folder-icon .video-folder-art {
+  box-shadow: none;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.video-folder-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.video-folder-text .browse-subtitle {
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 639px) {
+  .videos-view {
+    gap: var(--space-5);
+  }
+
+  .browse-grid.video-folder-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .browse-card.video-folder-tile {
+    padding: 0.375rem;
+    gap: var(--space-2);
+  }
+
+  .video-folder-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .video-grid {
+    gap: 0.875rem 0.625rem;
+  }
+}

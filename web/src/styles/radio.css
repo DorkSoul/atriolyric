@@ -1,0 +1,308 @@
+/* Radio: your stations as tiles, the add-station form,
+   and the free stations as full-width collapsible provider groups with their
+   stations in a responsive grid. */
+
+.radio-view {
+  /* .app-main leaves the last 0.75rem of the page gutter to the view. */
+  padding-inline: 0.75rem;
+  padding-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.text-dim {
+  color: var(--text-dim);
+}
+
+.radio-view .page-toolbar.radio-sort-row {
+  margin: 0;
+}
+
+.radio-sort-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.radio-sort-label .page-toolbar-label {
+  margin-left: 0;
+}
+
+.radio-view .select-menu-toggle {
+  min-width: 11rem;
+  justify-content: space-between;
+}
+
+.radio-section {
+  min-width: 0;
+}
+
+.radio-view .sec-head h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-transform: none;
+}
+
+.radio-view .empty {
+  margin: 0;
+  color: var(--text-dim);
+}
+
+/* Station tiles. */
+.radio-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.radio-station-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+}
+
+.radio-station-playing {
+  border-color: var(--accent);
+  background: var(--accent-muted);
+}
+
+.radio-station-btn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0;
+  text-align: left;
+  border-radius: var(--radius-sm);
+}
+
+.radio-station-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--surface-3);
+  color: var(--accent-text);
+  font-size: 1.2rem;
+}
+
+.radio-station-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.radio-station-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.radio-station-name-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.radio-station-playing .radio-station-name-text {
+  color: var(--accent-text);
+}
+
+.radio-station-desc {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.radio-station-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  flex-shrink: 0;
+}
+
+.radio-station-actions button {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-dim);
+}
+
+.radio-station-actions .favorite-active {
+  color: var(--accent-text);
+}
+
+.radio-station-remove svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+@media (hover: hover) {
+  .radio-station-actions button:hover:not(:disabled) {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+
+  .radio-station-actions .radio-station-remove:hover {
+    color: var(--danger-text);
+  }
+}
+
+/* Add a station: the inputs share the row, then Shared and the button. */
+.radio-add-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.radio-add-row input:not([type='checkbox']) {
+  flex: 1 1 10rem;
+  min-width: 0;
+  height: var(--control-h);
+}
+
+.radio-shared-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-dim);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.radio-add-row .btn {
+  flex: none;
+}
+
+.radio-view .login-error {
+  margin: var(--space-2) 0 0;
+}
+
+/* Free stations: one full-width collapsible group per provider. */
+.radio-provider-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.radio-provider-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0 0.75rem;
+  min-width: 0;
+}
+
+.radio-provider-group summary {
+  cursor: pointer;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  list-style: none;
+}
+
+.radio-provider-group summary .text-dim {
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.radio-provider-group summary::-webkit-details-marker {
+  display: none;
+}
+
+.radio-provider-group summary::after {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-left: auto;
+  border-right: 2px solid var(--text-faint);
+  border-bottom: 2px solid var(--text-faint);
+  transform: rotate(-45deg);
+  transition: transform var(--transition);
+}
+
+.radio-provider-group[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.radio-provider-group .radio-tiles {
+  padding-bottom: 0.75rem;
+}
+
+.radio-provider-group .radio-station-row {
+  background: var(--bg);
+}
+
+.radio-provider-group .radio-station-playing {
+  background: var(--accent-muted);
+}
+
+.radio-stop-btn {
+  margin-left: auto;
+  color: var(--danger);
+  border-color: var(--danger) !important;
+}
+
+@media (max-width: 639px) {
+  .radio-view {
+    gap: var(--space-5);
+  }
+
+  .radio-sort-label {
+    flex: 1;
+  }
+
+  .radio-view .select-menu-toggle {
+    flex: 1;
+    max-width: none;
+  }
+
+  .radio-station-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .radio-add-row input:not([type='checkbox']) {
+    flex-basis: 100%;
+  }
+
+  .radio-add-row .btn {
+    margin-left: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radio-provider-group summary::after {
+    transition: none;
+  }
+}

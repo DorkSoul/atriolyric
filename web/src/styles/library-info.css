@@ -1,0 +1,367 @@
+/* Library info (components/LibraryInfoView.tsx). The page's width decides the
+   layout (container queries), not the window's: the sidebar and the side
+   panel take a varying share of it. */
+.li-body {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-width: 0;
+  /* The inset the other views give themselves, so the cards line up with the
+     top bar's title instead of standing 0.5-0.75rem left of it. */
+  padding: 0 0.5rem var(--space-6);
+}
+
+@media (min-width: 640px) {
+  .li-body {
+    padding-inline: 0.75rem;
+  }
+}
+
+.li-body h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.li-body h3 {
+  margin: 0 0 var(--space-2);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.li-sec-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  /* The height of a button, so a heading with a link beside it ("All 50")
+     is no taller than one without, and the panels side by side start level. */
+  min-height: 2.25rem;
+  margin-bottom: var(--space-3);
+}
+
+.li-body section > h2 {
+  margin-bottom: var(--space-3);
+}
+
+.li-link {
+  color: var(--accent-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Totals tiles */
+.li-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@container (min-width: 30rem) {
+  .li-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@container (min-width: 52rem) {
+  .li-stats { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+.li-stat {
+  min-width: 0;
+  padding: var(--space-4) 0.875rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.li-stat b {
+  display: block;
+  overflow: hidden;
+  font-size: 1.375rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.li-stat span {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+}
+
+/* Panels */
+.li-panel {
+  min-width: 0;
+  padding: 0.375rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.li-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+@container (min-width: 60rem) {
+  .li-cols {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+
+  /* Side by side, the two panels are as tall as each other, so their
+     bottoms line up as well as their tops. */
+  .li-cols {
+    align-items: stretch;
+  }
+
+  .li-cols > section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .li-cols > section > .li-panel {
+    flex: 1;
+  }
+}
+
+.li-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  gap: var(--space-4);
+}
+
+.li-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.li-card .li-panel {
+  flex: 1;
+}
+
+/* Key / value rows */
+.li-kv {
+  display: grid;
+  /* The label keeps its width so it stays on one line; the value takes the rest. */
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+  padding: 0.875rem 1rem;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.li-kv dt {
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.li-kv dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A note under a value (inside the dd), on its own line. */
+.li-kv .li-note {
+  display: block;
+  padding: 0;
+  margin-top: 0.125rem;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-align: right;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.li-dim {
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+.li-none {
+  margin: 0;
+  padding: 1rem;
+}
+
+.li-note {
+  margin: 0;
+  padding: 0 0.75rem 0.75rem;
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+}
+
+/* Bars */
+.li-bars {
+  display: grid;
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) auto;
+  gap: 0.625rem var(--space-3);
+  align-items: center;
+  padding: 0.875rem 1rem;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.li-bar-row {
+  display: contents;
+}
+
+.li-bar-name {
+  overflow: hidden;
+  color: var(--text-dim);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.li-bar-track {
+  height: 8px;
+  overflow: hidden;
+  background: var(--surface-3);
+  border-radius: 8px;
+}
+
+.li-bar-track i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.li-bar-row b {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Recently added: a table on a wide page, compact rows on a narrow one. */
+.li-recent ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.li-row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1.3fr) minmax(0, 1fr) 2.75rem 5.5rem 4rem;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0 0.625rem;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  text-align: left;
+}
+
+button.li-row:hover {
+  background: var(--surface-2);
+}
+
+.li-row b,
+.li-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.li-row b {
+  font-weight: 600;
+}
+
+.li-c-artist,
+.li-c-year,
+.li-c-format,
+.li-c-added {
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.li-c-year,
+.li-c-added {
+  text-align: right;
+}
+
+.li-head {
+  min-height: 2rem;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  color: var(--text-faint);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.li-head span {
+  color: var(--text-faint);
+}
+
+.li-art {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-xs);
+}
+
+@container (max-width: 40rem) {
+  .li-row {
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      'cover album added'
+      'cover artist format';
+    column-gap: var(--space-3);
+    row-gap: 0;
+    padding: 0.375rem 0.25rem;
+  }
+  .li-c-cover { grid-area: cover; }
+  .li-c-album { grid-area: album; }
+  .li-c-artist { grid-area: artist; font-size: 0.8125rem; }
+  .li-c-format { grid-area: format; font-size: 0.75rem; text-align: right; }
+  .li-c-added { grid-area: added; font-size: 0.8125rem; }
+  .li-c-year { display: none; }
+  .li-head { display: none; }
+}
+
+/* Loading placeholders */
+.li-skeleton {
+  display: block;
+  height: 0.875rem;
+  background: var(--surface-3);
+  border-radius: var(--radius-xs);
+  opacity: 0.6;
+}
+
+.li-skeleton-value {
+  width: 60%;
+  height: 1.375rem;
+  margin-bottom: 0.25rem;
+}
+
+.li-skeleton-panel {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.li-body > .loading {
+  margin: 0;
+  color: var(--text-faint);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .li-skeleton {
+    animation: li-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes li-pulse {
+  50% { opacity: 0.3; }
+}

@@ -1,0 +1,28 @@
+# Optional hardening overlay for compose.yaml, for an install behind an HTTPS
+# reverse proxy:
+#   docker compose -f compose.yaml -f compose.production.yaml up -d
+# The data folder must already belong to ATRIOLYRIC_UID:ATRIOLYRIC_GID, since
+# the container no longer starts as root to fix its ownership.
+services:
+  atriolyric:
+    user: "${ATRIOLYRIC_UID:-1000}:${ATRIOLYRIC_GID:-1000}"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=256m,noexec,nosuid,nodev
+    # Only reachable through the proxy on this machine.
+    ports: !override
+      - "127.0.0.1:8030:8000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+    environment:
+      # The reverse proxy's address or its Docker network's subnet, so the
+      # login limiter and the logs see real client addresses. Never `*`
+      # unless the port is unreachable except through the proxy.
+      # FORWARDED_ALLOW_IPS: "172.18.0.0/16"

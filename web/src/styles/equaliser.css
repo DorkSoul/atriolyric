@@ -1,0 +1,39 @@
+/* Equaliser (Settings -> Playback) */
+.eq-header { flex-wrap: wrap; gap: 0.5rem; }
+.eq-header-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.eq-bands { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 0.15rem; max-width: 460px; margin-top: 0.5rem; }
+.eq-band { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; min-width: 0; font-size: 0.75rem; }
+.eq-band input[type='range'] {
+  /* Vertical slider, the standard way (Chrome 124, Firefox 120, Safari 17.4):
+     writing-mode, with the minimum at the bottom thanks to direction: rtl.
+     Older Safari gets the legacy appearance below. */
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 1.75rem;
+  height: 9rem;
+  min-height: 0;
+  min-width: 0;
+  margin: 0;
+  accent-color: var(--accent);
+}
+/* Safari before 17.4 draws a range input horizontally whatever its
+   writing-mode. No query asks "can a range input be vertical", so this picks
+   those versions by a feature that arrived in the same Safari release
+   (transition-behavior, 17.4). Chrome has had that since 117, before its
+   vertical range inputs (124), so it skips this rule; Firefox has no
+   slider-vertical at all, so the first condition already fails there. */
+@supports (-webkit-appearance: slider-vertical) and (not (transition-behavior: allow-discrete)) {
+  .eq-band input[type='range'] { -webkit-appearance: slider-vertical; }
+}
+.eq-band-db { font-variant-numeric: tabular-nums; color: var(--text-dim); line-height: 1.2; white-space: nowrap; }
+.eq-band-freq { color: var(--text-faint); line-height: 1.2; white-space: nowrap; }
+@media (max-width: 640px) {
+  .eq-band { font-size: 0.65rem; }
+  .eq-band input[type='range'] { width: 1.5rem; }
+}
+@media (max-width: 380px) {
+  .eq-bands { gap: 0.05rem; }
+  .eq-band { font-size: 0.58rem; }
+  .eq-band input[type='range'] { width: 1.25rem; }
+}
+

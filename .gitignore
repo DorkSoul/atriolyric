@@ -1,0 +1,33 @@
+# Python / server
+server/.venv/
+server/data/
+server/__pycache__/
+server/**/__pycache__/
+server/.pytest_cache/
+server/.coverage
+server/coverage.json
+server/htmlcov/
+*.pyc
+
+# Node / web
+web/node_modules/
+web/dist/
+
+# Your own compose file, copied from compose.example.yaml
+/compose.yaml
+
+# Local manual-testing library (synthetic/real sample files, never committed)
+dev-library/
+dev-library-private/
+
+# Editors / OS
+.DS_Store
+
+# Cayrnx brief folders — delete the next line to commit them
+/briefs
+
+# Local AI tooling and private notes
+/.claude/
+/.codex/
+/docs/ai-agents.md
+/docs/audit-*.md

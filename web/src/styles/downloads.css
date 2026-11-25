@@ -1,0 +1,167 @@
+/* The Android app's downloads list (Settings > Downloads, and the bundled
+   offline page). */
+.downloads-summary {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin: 0 0 var(--space-3);
+}
+
+.downloads-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.download-row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.download-art {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-3);
+  object-fit: cover;
+  display: block;
+}
+
+.download-text {
+  min-width: 0;
+}
+
+.download-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.download-meta {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.download-meta .download-failed {
+  color: var(--danger-text);
+}
+
+.download-progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  margin-top: 0.3rem;
+  accent-color: var(--accent);
+}
+
+.download-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.downloads-empty {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* On a song or video row: on this device (filled), or on its way (a ring). */
+.download-mark {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  font-size: 1rem;
+  color: var(--text-dim);
+}
+
+/* Beside the name of an album, artist or playlist that is kept downloaded. */
+.browse-title .download-mark,
+.rail-card-title .download-mark,
+.collection-detail-copy h2 .download-mark {
+  font-size: 0.9em;
+  vertical-align: -0.12em;
+}
+
+.download-mark-downloaded {
+  color: var(--accent-text);
+}
+
+.download-mark-failed {
+  color: var(--danger, #e5484d);
+}
+
+.download-mark-spin {
+  /* The centre of the 24-unit drawing, whatever size it is shown at. */
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+  animation: download-mark-spin 1.2s linear infinite;
+}
+
+@keyframes download-mark-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .download-mark-spin {
+    animation: none;
+  }
+}
+
+.video-thumb-wrap .download-mark {
+  position: absolute;
+  left: 0.4rem;
+  bottom: 0.4rem;
+  font-size: 1.15rem;
+  border-radius: 50%;
+  background: var(--bg);
+}
+
+.video-card-unavailable .video-thumb,
+.video-card-unavailable .video-title {
+  opacity: 0.45;
+}
+
+/* With no connection, what is not on the device cannot play: muted like a
+   disliked row (colour, not opacity, so the text keeps its contrast). */
+.track-row-unavailable .track-title-btn .art-wrap {
+  opacity: 0.4;
+}
+
+.track-row-unavailable .track-title,
+.track-row-unavailable .track-subtitle,
+.track-row-unavailable .track-col,
+.track-row-unavailable .library-links a,
+.track-row-unavailable .library-link-button {
+  color: var(--text-faint);
+}
+
+.offline-notice {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 0.4rem);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 300;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  pointer-events: none;
+}

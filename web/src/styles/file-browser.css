@@ -1,0 +1,300 @@
+/* File browser */
+
+.files-view {
+  /* .app-main leaves the last 0.75rem of the page gutter to the view. */
+  padding-inline: 0.75rem;
+  padding-top: var(--space-2);
+  min-width: 0;
+}
+
+/* The Files search sits directly under the top bar, with the
+   magnifier and the clear button inside the box. */
+.files-search-wrap {
+  margin: 0 0 var(--space-4);
+}
+
+.files-search-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 35rem;
+  min-width: 0;
+}
+
+.files-search-icon {
+  position: absolute;
+  left: 0.85rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+.files-search-control input {
+  flex: 1;
+  min-width: 0;
+  height: var(--control-h);
+  padding-left: 2.4rem;
+  padding-right: 2.6rem;
+  background: var(--surface);
+  border-color: var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+/* The browser's own clear (x) would sit beside ours. */
+.files-search-control input::-webkit-search-cancel-button {
+  appearance: none;
+  display: none;
+}
+
+.files-search-clear {
+  position: absolute;
+  right: 0.25rem;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--text-dim);
+}
+
+.files-search-clear svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (hover: hover) {
+  .files-search-clear:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+}
+
+.files-search-summary {
+  margin: 0.2rem 0 0.5rem;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.files-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: var(--space-3);
+  color: var(--text-dim);
+  min-width: 0;
+}
+
+.files-breadcrumb-part {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.files-breadcrumb button {
+  color: var(--accent-text);
+  font-weight: 600;
+  padding: 0 0.125rem;
+  min-height: 2rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+@media (hover: hover) {
+  .files-breadcrumb button:hover:not(:disabled) {
+    color: var(--accent-text-hover);
+  }
+}
+
+.files-breadcrumb button:disabled {
+  color: var(--text);
+  font-weight: 700;
+  cursor: default;
+}
+
+.files-breadcrumb-sep {
+  color: var(--text-dim);
+}
+
+.files-list,
+.files-group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Stands in for the folder or file rows outside the rendered window. */
+.files-row-spacer {
+  list-style: none;
+}
+
+.files-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 0.625rem;
+  border-bottom: 1px solid var(--border);
+  transition: background-color var(--transition);
+}
+
+@media (hover: hover) {
+  .files-row:hover {
+    background: var(--surface);
+  }
+}
+
+.files-row-btn {
+  width: auto;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.625rem;
+  text-align: left;
+  border-radius: 0;
+}
+
+.files-folder-row .files-row-btn .files-name {
+  font-weight: 600;
+}
+
+.files-icon {
+  flex-shrink: 0;
+  width: 2rem;
+  display: grid;
+  place-items: center;
+  color: var(--accent-text);
+  font-size: 1.15rem;
+}
+
+.files-up-icon {
+  transform: rotate(180deg);
+}
+
+.files-row-btn .art-xs {
+  border-radius: 4px;
+}
+
+.files-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.files-item-label {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.files-item-label .files-name {
+  width: 100%;
+}
+
+.files-search-path {
+  overflow: hidden;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.files-duration {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.files-ignore-note,
+.files-folder-message {
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  margin: -0.5rem 0 var(--space-3);
+}
+
+.files-folder-message {
+  color: var(--accent-text);
+}
+
+/* "Ignored" as a small badge. */
+.files-ignored-label {
+  flex-shrink: 0;
+  background: var(--surface-3);
+  color: var(--text-dim);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.0625rem 0.4375rem;
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+}
+
+.files-ignore-button.btn {
+  flex-shrink: 0;
+  min-height: 2rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  font-size: 0.8125rem;
+}
+
+.files-ignore-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 480px) {
+  .files-row {
+    flex-wrap: wrap;
+  }
+
+  /* A folder's Ignore/Restore button always takes its own line here, not
+     only when the name is too long to share one: the folder list is
+     windowed and assumes every folder row is as tall as the first. */
+  .files-folder-row .files-row-btn {
+    flex-basis: 100%;
+  }
+
+  .files-row {
+    padding-right: 0;
+  }
+
+  .files-ignore-button.btn {
+    margin: 0 0.35rem 0.5rem 3.4rem;
+  }
+}
+
+
+/* List density "compact" (settings.listDensity, set on <html> as
+   data-density): folder rows ~36px, file rows ~40px (FilesView's first
+   guesses for its windowed lists match; the real row is measured). */
+[data-density='compact'] .files-row-btn {
+  min-height: 2.1875rem;
+  padding-block: 0.125rem;
+  gap: 0.625rem;
+}
+
+[data-density='compact'] .files-icon {
+  width: 1.75rem;
+  font-size: 1rem;
+}
+
+[data-density='compact'] .files-row-btn .art-xs {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+[data-density='compact'] .files-ignore-button.btn {
+  min-height: 1.75rem;
+}

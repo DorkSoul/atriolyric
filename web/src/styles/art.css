@@ -1,0 +1,100 @@
+/* Art */
+
+.art-wrap {
+  position: relative;
+  flex-shrink: 0;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* A press lands on the wrapper, which lives as long as the Art does, never on
+   what is inside it: the spinner, picture and fallback replace each other as
+   the image loads (or the track changes), and a press that went down on one
+   and came up on its replacement would produce no click at all - the player
+   bar's art would not open Now Playing. The press still reaches the button
+   around it. */
+.art-wrap > * {
+  pointer-events: none;
+}
+
+.art-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.art-fallback {
+  opacity: 0.5;
+  /* Fills the tile so the icon's percentage size is of the tile, not of
+     the icon itself. */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+}
+
+.art-fallback > svg {
+  width: 40%;
+  height: 40%;
+  max-width: 4rem;
+  max-height: 4rem;
+}
+
+/* Shown in place of the picture while it is queued or downloading. */
+.art-spinner {
+  width: 28%;
+  min-width: 0.9rem;
+  max-width: 2rem;
+  aspect-ratio: 1;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--text-dim);
+  animation: loading-status-spin 800ms linear infinite;
+}
+
+.art-xs {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.art-xs .art-fallback {
+  font-size: 1.1rem;
+}
+
+.art-sm {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.art-sm .art-fallback {
+  font-size: 1.3rem;
+}
+
+.appearance-list-art {
+  width: var(--list-art-size, 2.5rem);
+  height: var(--list-art-size, 2.5rem);
+  flex-shrink: 0;
+}
+
+.appearance-list-art .art-fallback {
+  font-size: calc(var(--list-art-size, 2.5rem) * 0.44);
+}
+
+.art-tile {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+}
+
+.art-tile .art-fallback {
+  font-size: 2.25rem;
+}
+

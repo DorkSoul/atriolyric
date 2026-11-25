@@ -1,0 +1,86 @@
+/* Login */
+
+.login-page {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: radial-gradient(circle at 50% 0%, var(--surface) 0%, var(--bg) 60%);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+  max-width: 20rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.75rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.login-form h1 {
+  margin: 0 0 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.login-form h1 .app-logo {
+  width: 1.6em;
+  height: 1.6em;
+}
+
+.login-form button {
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: 0.65rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .login-form button:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+}
+
+.login-form button:disabled {
+  opacity: 0.6;
+}
+
+/* The show-password eye sits inside its input: a bare icon, not the form's
+   accent pill. */
+.login-form button.password-toggle-btn,
+.login-form button.password-toggle-btn:hover:not(:disabled) {
+  background: none;
+  color: var(--text-dim);
+  padding: 0.3rem;
+  border-radius: var(--radius-sm);
+  font-weight: inherit;
+}
+
+@media (hover: hover) {
+  .login-form button.password-toggle-btn:hover:not(:disabled) {
+    color: var(--text);
+  }
+}
+
+.setup-intro {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.login-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin: 0;
+}
+

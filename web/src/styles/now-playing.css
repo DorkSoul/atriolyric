@@ -1,0 +1,1528 @@
+/* Now playing (full-screen sheet over the app).
+
+   Desktop (640px and wider): two columns -
+     left:  "← Back", the artwork, title / artist / album with the heart and
+            the song menu, then the seek bar, shuffle / previous / play / next
+            / repeat, the chips (Lyrics, Genres/tags, Playing on …, volume)
+            and the plays line. With lyrics shown, the artwork moves to the
+            left of the title and controls (top half) and the lyrics take
+            the bottom half.
+     right: Up next, always in view.
+   Phone: one scrolling column - the same top part, then a tab bar
+   "Up next | Lyrics" over the queue or the lyrics. Showing the lyrics never
+   resizes the artwork or the controls there. */
+
+/* The backdrop is near-black in every theme, so everything inside always
+   uses the dark palette. These mirror the dark defaults in :root (base.css)
+   and PALETTE_SURFACES (settings.ts);
+   keep them in step. --accent* is applied inline by JS and is untouched. */
+.nowplaying-overlay {
+  color-scheme: dark;
+  --bg: #0d1017;
+  --surface: #141925;
+  --surface-2: #1c2231;
+  --surface-3: #283043;
+  --border: #252c3b;
+  --border-strong: #3a4357;
+  --text: #eef1f6;
+  --text-dim: #a6afbf;
+  --text-faint: #8892a4;
+  --border-input: #6b7587;
+  --accent-text: var(--accent-text-dark);
+  --accent-text-hover: var(--accent-text-hover-dark);
+  --danger: #f2536b;
+  --danger-text: #f2536b;
+  --success: #3ecf6b;
+  --warning: #e8b339;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 7, 10, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  /* A rim of backdrop around the sheet: a press on it closes the sheet. */
+  padding: 0.75rem;
+  z-index: 100;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+.nowplaying-content {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.nowplaying-layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 27.5rem);
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.nowplaying-layout-radio {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.nowplaying-main {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  gap: 1.25rem;
+  min-width: 0;
+  min-height: 0;
+  padding: 3.5rem 3rem 1.5rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.nowplaying-close {
+  position: absolute;
+  z-index: 2;
+  top: 0.75rem;
+  left: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0 0.5rem;
+  border-radius: var(--radius-sm);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .nowplaying-close:hover {
+    color: var(--accent-text-hover);
+    background: var(--surface-2);
+  }
+}
+
+/* "Playing from <mix/album/...>" above the artwork: opens what the queue
+   was started from. */
+.nowplaying-origin {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.0625rem;
+  max-width: min(100%, 28rem);
+  min-width: 0;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-sm);
+  line-height: 1.25;
+  text-align: center;
+}
+
+.nowplaying-origin-kind {
+  color: var(--text-dim);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.nowplaying-origin-name {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--accent-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nowplaying-origin:disabled .nowplaying-origin-name {
+  color: var(--text);
+}
+
+@media (hover: hover) {
+  .nowplaying-origin:not(:disabled):hover {
+    background: var(--surface-2);
+  }
+
+  .nowplaying-origin:not(:disabled):hover .nowplaying-origin-name {
+    color: var(--accent-text-hover);
+  }
+}
+
+/* Beside the artwork with lyrics: above the title, in the first spacer row. */
+.has-lyrics .nowplaying-origin {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  justify-self: start;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+  padding-inline: 0;
+  text-align: start;
+}
+
+/* Wraps whichever of art-nowplaying/nowplaying-video-placeholder is active,
+   as a position: relative anchor for the right-click/long-press track
+   menu, without changing either child's own sizing behavior. */
+.nowplaying-art-menu-wrap {
+  position: relative;
+  flex: none;
+}
+
+.nowplaying-art-menu-wrap.is-audio {
+  width: min(25rem, 44vh, 100%);
+}
+
+.art-nowplaying {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.art-nowplaying .art-fallback {
+  font-size: 4rem;
+}
+
+.nowplaying-art-menu-wrap.is-video {
+  width: min(40rem, 100%);
+}
+
+.nowplaying-art-menu-wrap .nowplaying-video-placeholder {
+  width: 100%;
+}
+
+/* Title, artist and album with the heart and the song menu beside them. */
+.nowplaying-head {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: min(25rem, 100%);
+  flex: none;
+}
+
+.nowplaying-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.nowplaying-titles .marquee {
+  text-align: left;
+}
+
+.nowplaying-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.nowplaying-subtitle {
+  color: var(--text-dim);
+  font-size: 0.9375rem;
+}
+
+.nowplaying-album {
+  color: var(--text-faint);
+  font-size: 0.8125rem;
+}
+
+/* A link like the artist names above it. */
+.nowplaying-album a {
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .nowplaying-album a:hover {
+    text-decoration: underline;
+  }
+}
+
+.nowplaying-head .nowplaying-toggle-btn,
+.nowplaying-head .nowplaying-more {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font-size: 1.25rem;
+}
+
+.nowplaying-head .nowplaying-more {
+  color: var(--text-dim);
+}
+
+@media (hover: hover) {
+  .nowplaying-head .nowplaying-toggle-btn:hover,
+  .nowplaying-head .nowplaying-more:hover {
+    color: var(--text);
+    background: var(--surface-2);
+  }
+}
+
+/* Seek bar, transport, chips and the plays line. */
+.nowplaying-ctl {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: min(30rem, 100%);
+  flex: none;
+}
+
+.nowplaying-quality-notice {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, transparent);
+  border-radius: var(--radius-full);
+  color: var(--warning);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* Marquee - a single line that scrolls to reveal text too long for its
+   container instead of wrapping onto a second line. Text that already
+   fits stays static and centered (see .marquee-overflowing below, which
+   only applies once MarqueeText has measured an actual overflow). */
+/* The text is an inline span at rest: an inline-block is an atomic box, so
+   text-overflow cannot cut it and it would be clipped hard with no "...". Only
+   while it scrolls does it become an inline-block, which the transform
+   animation needs. */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
+}
+
+.marquee-text {
+  display: inline;
+}
+
+.marquee[data-marquee='scroll'] .marquee-text {
+  display: inline-block;
+}
+
+.marquee-overflowing {
+  text-align: left;
+}
+
+.marquee-left {
+  text-align: left;
+}
+
+.nowplaying-seek {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+}
+
+.nowplaying-seek .seek-track {
+  flex: 1;
+  min-width: 0;
+}
+
+.nowplaying-seek .seek-track-bg {
+  height: 6px;
+}
+
+.nowplaying-seek .player-time:last-child {
+  text-align: right;
+}
+
+.nowplaying-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.nowplaying-controls-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+}
+
+.nowplaying-controls button {
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+}
+
+@media (hover: hover) {
+  .nowplaying-controls button:not(.nowplaying-play-btn):hover {
+    background: var(--surface-2);
+  }
+}
+
+.nowplaying-controls .nowplaying-play-btn {
+  width: 4rem;
+  height: 4rem;
+  margin-inline: 0.25rem;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 1.6rem;
+  box-shadow: var(--shadow-md);
+  transition: transform 150ms ease;
+}
+
+@media (hover: hover) {
+  .nowplaying-play-btn:hover {
+    transform: scale(1.05);
+  }
+}
+
+.nowplaying-play-btn:active {
+  transform: scale(0.95);
+}
+
+.nowplaying-toggle-btn {
+  color: var(--text-dim);
+}
+
+.nowplaying-controls .nowplaying-toggle-btn {
+  font-size: 1.3rem;
+}
+
+.nowplaying-toggle-btn.active {
+  color: var(--accent-text);
+}
+
+/* Lyrics, Genres/tags, Playing on …, volume: one wrapping row of chips. */
+.nowplaying-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.nowplaying-chip,
+.nowplaying-chips .labels-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: var(--chip-h);
+  padding: 0 0.875rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.nowplaying-chip.active {
+  background: var(--accent-muted);
+  border-color: transparent;
+  color: var(--accent-text);
+}
+
+@media (hover: hover) {
+  .nowplaying-chip:hover,
+.nowplaying-chips .labels-btn:hover {
+    color: var(--text);
+    border-color: var(--text-faint);
+  }
+
+  .nowplaying-chip.active:hover {
+    color: var(--accent-text-hover);
+    border-color: transparent;
+  }
+}
+
+.nowplaying-labels {
+  display: flex;
+}
+
+/* Under the seek bar: transport, chips and the plays line in the middle
+   column, the volume upright in the right one, and an empty column of the
+   same width on the left so play stays centred. */
+.nowplaying-ctl-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.nowplaying-ctl-body.has-side-volume {
+  --np-volume-w: 1.75rem;
+  display: grid;
+  grid-template-columns: var(--np-volume-w) minmax(0, 1fr) var(--np-volume-w);
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.nowplaying-ctl-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.nowplaying-volume-side {
+  display: flex;
+  justify-content: center;
+}
+
+.nowplaying-volume-side .nowplaying-volume {
+  flex-direction: column-reverse;
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.nowplaying-volume-side .nowplaying-volume input {
+  flex: 1;
+  width: 1.5rem;
+  min-height: 5rem;
+  writing-mode: vertical-lr;
+  direction: rtl;
+}
+
+/* Lyrics, Genres/tags and the device on one line. */
+.nowplaying-chips {
+  flex-wrap: nowrap;
+}
+
+.nowplaying-chips > * {
+  flex: none;
+}
+
+/* With lyrics or a video the row is only a wrapper; the artwork lays out as
+   before. */
+.nowplaying-art-row {
+  display: contents;
+}
+
+/* Otherwise the artwork stays centred and the volume stands upright just to
+   its right, as tall as the artwork. --np-art-w leaves room for it. */
+.nowplaying-art-row.has-volume {
+  --np-art-w: min(25rem, 44vh, calc(100% - 6rem));
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.nowplaying-art-row.has-volume .nowplaying-art-menu-wrap.is-audio {
+  width: var(--np-art-w);
+}
+
+.nowplaying-volume-upright {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% + var(--np-art-w) / 2 + 1rem);
+  display: flex;
+}
+
+.nowplaying-volume-upright .nowplaying-volume {
+  flex-direction: column-reverse;
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.nowplaying-volume-upright .nowplaying-volume input {
+  flex: 1;
+  width: 1.5rem;
+  min-height: 5rem;
+  writing-mode: vertical-lr;
+  direction: rtl;
+}
+
+.nowplaying-volume {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--text-dim);
+}
+
+.nowplaying-volume input {
+  width: 6rem;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.nowplaying-stats {
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* Lyrics in the bottom half of the left column (desktop). */
+.nowplaying-layout.has-lyrics .nowplaying-main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 23.75rem);
+  /* Title row, controls (never squeezed), lyrics: half the column at most,
+     less when the column is short, so nothing above is ever covered. */
+  /* The lyrics get half the room the title and controls leave (never
+     overflowing a short column).
+     The title and the controls sit in rows 2 and 3 between two equal
+     spacers, so the block is centred against the artwork beside it (rows
+     1-4), not lined up with its bottom. */
+  grid-template-rows: minmax(0, 1fr) auto auto minmax(0, 1fr) minmax(0, 2fr);
+  justify-content: center;
+  align-content: stretch;
+  align-items: stretch;
+  column-gap: 2.25rem;
+  row-gap: 0;
+  padding: 3.5rem 3rem 0;
+  overflow: hidden;
+}
+
+.has-lyrics .nowplaying-art-menu-wrap.is-audio {
+  grid-column: 1;
+  grid-row: 1 / 5;
+  align-self: center;
+  justify-self: end;
+  width: auto;
+  height: calc(100% - 1.25rem);
+  max-height: min(25rem, 44vh);
+  aspect-ratio: 1;
+}
+
+/* With lyrics the row (artwork, then the upright volume) is the grid item:
+   as tall as the title and controls, the volume as tall as the artwork. */
+.has-lyrics .nowplaying-art-row.has-volume {
+  grid-column: 1;
+  grid-row: 1 / 5;
+  align-self: center;
+  justify-self: end;
+  justify-content: flex-end;
+  gap: 1rem;
+  width: auto;
+  max-width: 100%;
+  height: calc(100% - 1.25rem);
+  max-height: min(25rem, 44vh);
+  min-height: 0;
+}
+
+.has-lyrics .nowplaying-art-row.has-volume .nowplaying-art-menu-wrap.is-audio {
+  height: 100%;
+  max-height: 100%;
+  max-width: calc(100% - 2.5rem);
+  width: auto;
+}
+
+.has-lyrics .nowplaying-art-row.has-volume .nowplaying-volume-upright {
+  position: static;
+  flex: none;
+}
+
+.has-lyrics .nowplaying-volume-upright .nowplaying-volume input {
+  min-height: 3rem;
+}
+
+.has-lyrics .nowplaying-art-menu-wrap .art-nowplaying {
+  height: 100%;
+}
+
+.has-lyrics .nowplaying-head {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: end;
+  width: auto;
+  min-width: 0;
+  padding-bottom: 0.875rem;
+}
+
+/* Beside the artwork the block is not centred on the page, so the empty
+   balancing column left of the controls only costs width: drop it. */
+.has-lyrics .nowplaying-ctl-body.has-side-volume {
+  grid-template-columns: minmax(0, 1fr) var(--np-volume-w);
+}
+
+.has-lyrics .nowplaying-ctl-spacer {
+  display: none;
+}
+
+/* Beside the artwork the column is narrow: the chips may wrap (the device
+   onto its own centred line) rather than squash the device name to nothing. */
+.has-lyrics .nowplaying-chips {
+  flex-wrap: wrap;
+}
+
+.has-lyrics .nowplaying-ctl {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: start;
+  width: auto;
+  min-width: 0;
+  padding-bottom: 1rem;
+}
+
+.has-lyrics .nowplaying-stats {
+  display: none;
+}
+
+.nowplaying-lyrics-pane {
+  grid-column: 1 / -1;
+  grid-row: 5;
+  display: flex;
+  min-height: 0;
+  margin-inline: -3rem;
+  border-top: 1px solid var(--border);
+}
+
+.nowplaying-lyrics-pane .lyrics-inline {
+  padding: 1rem 3rem 1.5rem;
+}
+
+.nowplaying-lyrics-pane .lyrics-inline-synced {
+  padding-block: 0;
+}
+
+/* Room above the first line and below the last so any line can scroll to
+   the middle. As spacers inside the scrolled content, not padding: padding
+   counts toward the box's own height and would make it taller than its half
+   of the column. A percentage there would also be of the width; cqh is of the Now
+   Playing column's height (the pane is about half of it). */
+.nowplaying-lyrics-pane .lyrics-inline-synced::before,
+.nowplaying-lyrics-pane .lyrics-inline-synced::after {
+  content: '';
+  display: block;
+  height: 25cqh;
+}
+
+.nowplaying-lyrics-pane .lyrics-inline-line {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* Now Playing as a page in the app's content area (desktop and tablet; see
+   NowPlayingPage). It uses the app's own theme, not the sheet's dark one,
+   and fills the space <main> has, with no card around it. */
+.nowplaying-page {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  background: var(--bg);
+}
+
+.nowplaying-page > .nowplaying-content {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--bg);
+}
+
+.nowplaying-page > .nowplaying-content:focus {
+  outline: none;
+}
+
+/* The page fits the window, never scrolls: the column is a size container,
+   so the artwork takes whatever height the title, seek bar, controls and
+   chips leave (cqh = the column's height). */
+.nowplaying-page .nowplaying-main {
+  container-type: size;
+  overflow: hidden;
+}
+
+/* Without lyrics the artwork's row takes all the height the title, seek
+   bar, controls, chips and plays line leave, and the artwork is as big as
+   that row allows (cqh/cqw are the row's own height and width). Its top
+   lines up with the Back button; a small gap is left at the bottom. */
+.nowplaying-page .nowplaying-layout:not(.has-lyrics) .nowplaying-main {
+  justify-content: flex-start;
+  padding-top: 0.75rem;
+  padding-bottom: 1rem;
+}
+
+.nowplaying-page .nowplaying-layout:not(.has-lyrics) .nowplaying-art-row.has-volume {
+  flex: 1 1 0;
+  min-height: 6rem;
+  container-type: size;
+  /* When the width limits it, the artwork sits on the title (any spare
+     height goes above it, not between it and the song it shows). */
+  align-items: flex-end;
+  --np-art-w: min(100cqh, calc(100cqw - 6rem), 40rem);
+}
+
+.nowplaying-page .nowplaying-layout:not(.has-lyrics) .nowplaying-volume-upright {
+  top: auto;
+  bottom: 0;
+  height: var(--np-art-w);
+}
+
+.nowplaying-page .nowplaying-art-row.has-volume {
+  --np-art-w: max(6rem, min(25rem, calc(100% - 6rem), calc(100cqh - 25rem)));
+}
+
+/* With lyrics: the lyrics take the bottom half (less only on a window too
+   short for the title and controls above); the artwork, title and controls
+   share the top half (the artwork as tall as that half allows). */
+.nowplaying-page .nowplaying-layout.has-lyrics .nowplaying-main {
+  grid-template-rows: minmax(0, 1fr) auto auto minmax(0, 1fr) minmax(0, 50%);
+}
+
+/* Wide: Up next is in the side panel, so the middle is one column. */
+.nowplaying-layout.no-side {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Up next column (desktop) / section under the controls (phone). */
+.nowplaying-side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+}
+
+.nowplaying-side-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+  min-height: 3.75rem;
+  padding: 0.75rem 1rem 0;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.nowplaying-side-title {
+  margin: 0;
+  padding: 0.625rem 0.25rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.nowplaying-side-count {
+  margin-right: auto;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.nowplaying-side-head .nowplaying-side-count {
+  padding-bottom: 0.125rem;
+}
+
+.nowplaying-side-head .queue-previous-toggle,
+.nowplaying-side-previous .queue-previous-toggle {
+  display: inline-flex;
+  width: auto;
+  margin: 0;
+  padding: 0.25rem 0.5rem;
+  background: none;
+  color: var(--accent-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.nowplaying-side-pane {
+  --queue-sticky-offset: 0.75rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.75rem 1rem 2rem;
+  scrollbar-width: thin;
+}
+
+.nowplaying-tab {
+  min-height: 2.75rem;
+  margin-bottom: -1px;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.nowplaying-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.nowplaying-lyrics-tab {
+  display: flex;
+  height: min(60svh, 30rem);
+}
+
+.nowplaying-lyrics-tab .lyrics-inline-line {
+  font-size: 1.1875rem;
+  font-weight: 700;
+}
+
+.lyrics-inline {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  position: relative;
+  padding: 1rem 0.9rem;
+  text-align: center;
+  scrollbar-width: thin;
+}
+
+.lyrics-inline-synced {
+  /* Room above/below so the first and last lines can sit at the centre. */
+  padding-block: 40% 40%;
+}
+
+.lyrics-inline-line {
+  margin: 0 0 0.6rem;
+  color: var(--text-dim);
+  opacity: 0.55;
+  font-size: 1rem;
+  line-height: 1.35;
+  transition: color var(--transition);
+}
+
+.lyrics-inline-active {
+  color: var(--accent-text);
+  opacity: 1;
+  font-weight: 700;
+}
+
+.lyrics-inline-plain {
+  margin: 0;
+  white-space: pre-wrap;
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.lyrics-inline-empty {
+  margin: auto;
+  color: var(--text-dim);
+}
+
+.lyrics-inline-source {
+  margin: 1rem 0 0;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+}
+
+/* The queue */
+
+.nowplaying-queue {
+  width: 100%;
+  text-align: left;
+}
+
+.queue-context-note {
+  margin: 0 0 0.25rem;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+}
+
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.queue-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  min-height: 3.25rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+}
+
+@media (hover: hover) {
+  .queue-row:hover {
+    background: var(--surface-2);
+  }
+}
+
+.queue-row .art-xs {
+  border-radius: var(--radius-xs);
+}
+
+.queue-row-played .queue-row-info {
+  opacity: 0.6;
+}
+
+.queue-row-current {
+  /* Pinned to the top of the scrolling list; opaque so rows scroll under it. */
+  position: sticky;
+  top: calc(-1 * var(--queue-sticky-offset, 0px));
+  z-index: 1;
+  background: linear-gradient(var(--accent-muted), var(--accent-muted)), var(--surface);
+}
+
+@media (hover: hover) {
+  .queue-row-current:hover {
+    background: linear-gradient(var(--accent-muted), var(--accent-muted)), var(--surface-2);
+  }
+}
+
+.queue-row-current .track-title {
+  color: var(--accent-text);
+}
+
+.queue-drag-handle-pinned {
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+.queue-previous-toggle {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.4rem;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  font-size: 0.85rem;
+}
+
+.playlist-reorder-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.playlist-reorder-row {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Drag-to-reorder (useDragReorder): the held row turns see-through and
+   follows the pointer; the rows it passes slide aside to open the gap it
+   will drop into. Shared by the queue, playlist and tab-order lists. */
+.reorder-shifting {
+  transition: transform 150ms ease;
+}
+
+.reorder-dragging {
+  position: relative;
+  z-index: 2;
+  opacity: 0.35;
+  transition: none;
+}
+
+/* Held where it was dropped until the new order renders: no slide back. */
+.reorder-settling {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reorder-shifting {
+    transition: none;
+  }
+}
+
+.queue-drag-handle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: var(--text-faint);
+  cursor: grab;
+  padding: 0.3rem;
+  /* Without this, a press-drag on the handle scrolls the (scrollable)
+     queue list on touch devices instead of reordering. */
+  touch-action: none;
+  /* A real button (it takes focus and the arrow keys); it keeps its own size
+     rather than the 2.25rem minimum every other button gets. */
+  min-width: 24px;
+  min-height: 0;
+}
+
+.queue-drag-handle:active {
+  cursor: grabbing;
+}
+
+.queue-row-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 0.1rem;
+}
+
+.queue-row-jump {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.queue-row-jump .track-title {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.queue-row-info .track-title,
+.queue-row-info .track-subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A long title wraps onto a second line before it is cut: the row is narrow
+   (the side panel), so one line shows little of it. */
+.queue-row-info .queue-row-jump .track-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.queue-row-info .track-subtitle {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+}
+
+.queue-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  flex-shrink: 0;
+}
+
+.queue-row-actions button {
+  color: var(--text-dim);
+  padding: 0.3rem;
+  border-radius: var(--radius-full);
+}
+
+@media (hover: hover) {
+  .queue-row-actions button:hover:not(:disabled) {
+    background: var(--surface-3);
+    color: var(--text);
+  }
+}
+
+.queue-row-actions button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Radio */
+
+.nowplaying-radio-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.nowplaying-radio-actions button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--chip-h);
+  padding: 0 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .nowplaying-radio-actions button:hover:not(:disabled) {
+    background: var(--surface-3);
+  }
+}
+
+.nowplaying-radio-actions .radio-stop-btn {
+  margin-left: 0;
+}
+
+.nowplaying-radio-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.nowplaying-device-row {
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+}
+
+@media (hover: hover) {
+  .nowplaying-device-row:hover {
+    background: var(--surface-3);
+  }
+}
+
+.nowplaying-device-row.device-active {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.nowplaying-device-item {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.nowplaying-device-item .nowplaying-device-row {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nowplaying-video-placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+}
+
+.nowplaying-video-el {
+  position: fixed;
+  z-index: 105;
+  top: -9999px;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  border-radius: var(--radius-md);
+  background: black;
+  object-fit: contain;
+  box-shadow: var(--shadow-lg);
+  /* Purely a visual layer - it has no native controls (play/pause/seek go
+     through the usual player controls, not the element itself), and being
+     `position: fixed` with a high z-index would otherwise let it intercept
+     clicks meant for whatever it happens to be floating over (e.g. the
+     Now Playing close button). */
+  pointer-events: none;
+}
+
+/* Narrower desktops: a narrower Up next column, a smaller artwork beside the
+   lyrics. */
+@media (max-width: 1199px) {
+  .nowplaying-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 21.25rem);
+  }
+
+  .nowplaying-layout-radio {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nowplaying-layout.has-lyrics .nowplaying-main {
+    grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+    column-gap: 1.5rem;
+    padding: 3.5rem 1.75rem 0;
+    justify-content: stretch;
+  }
+
+  /* As tall as the title and controls beside it (never reaching into the
+     lyrics on a short window), at most the column's width. */
+  .has-lyrics .nowplaying-art-menu-wrap.is-audio {
+    max-width: 100%;
+    max-height: none;
+  }
+
+  /* Here the column's width sizes the artwork (square), and the volume
+     beside it is as tall as it. The title and controls keep the width they
+     need. */
+  .nowplaying-layout.has-lyrics .nowplaying-main {
+    grid-template-columns: minmax(8.5rem, 11rem) minmax(0, 1fr);
+  }
+
+  .has-lyrics .nowplaying-art-row.has-volume {
+    width: 100%;
+    height: auto;
+    max-height: none;
+  }
+
+  /* The controls give a little to keep the artwork usable. */
+  .has-lyrics .nowplaying-ctl-main,
+  .has-lyrics .nowplaying-controls,
+  .has-lyrics .nowplaying-controls-main {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .has-lyrics .nowplaying-ctl-main {
+    width: 100%;
+  }
+
+  .has-lyrics .nowplaying-controls-main button {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .has-lyrics .nowplaying-controls-main .nowplaying-play-btn {
+    flex: none;
+  }
+
+  /* The artwork can be small here: the slider alone (no speaker) runs its
+     full height. */
+  .has-lyrics .nowplaying-volume-upright .nowplaying-volume svg {
+    display: none;
+  }
+
+  .has-lyrics .nowplaying-volume-upright .nowplaying-volume input {
+    min-height: 0;
+  }
+
+  .has-lyrics .nowplaying-art-row.has-volume .nowplaying-art-menu-wrap.is-audio {
+    flex: 1 1 auto;
+    width: auto;
+    height: auto;
+    min-width: 0;
+  }
+
+  .nowplaying-lyrics-pane {
+    margin-inline: -1.75rem;
+  }
+
+  .nowplaying-lyrics-pane .lyrics-inline {
+    padding-inline: 1.75rem;
+  }
+}
+
+@media (max-width: 999px) {
+  .nowplaying-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 18.75rem);
+  }
+
+  .nowplaying-layout-radio {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nowplaying-main {
+    padding-inline: 1.5rem;
+  }
+
+  .nowplaying-layout.has-lyrics .nowplaying-main {
+    grid-template-columns: minmax(8.5rem, 9rem) minmax(0, 1fr);
+    column-gap: 1.25rem;
+    padding: 3.5rem 1.5rem 0;
+  }
+
+  .nowplaying-controls-main {
+    gap: 0.125rem;
+  }
+
+  .nowplaying-controls button {
+    width: 2.625rem;
+    height: 2.625rem;
+  }
+
+  .nowplaying-controls .nowplaying-play-btn {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .nowplaying-lyrics-pane {
+    margin-inline: -1.5rem;
+  }
+
+  .nowplaying-lyrics-pane .lyrics-inline {
+    padding-inline: 1.5rem;
+  }
+}
+
+/* Phone: full screen, one scrolling column. */
+/* Lyrics on, between the phone layout and the side panel (640-1199px): the
+   page also carries its own Up next column, so there is no room for the
+   artwork and the controls side by side. Stack them instead - artwork with
+   its upright volume, then the song and controls - with the lyrics below. */
+@media (min-width: 640px) and (max-width: 1199px) {
+  .nowplaying-layout.has-lyrics .nowplaying-main,
+  .nowplaying-page .nowplaying-layout.has-lyrics .nowplaying-main {
+    grid-template-columns: minmax(0, 1fr);
+    /* "Playing from", artwork, song, controls, spare room, lyrics. */
+    grid-template-rows: auto auto auto auto minmax(0, 1fr) minmax(0, 50%);
+    row-gap: 0.75rem;
+    justify-items: center;
+  }
+
+  .has-lyrics .nowplaying-origin {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+    align-items: center;
+    margin-bottom: 0;
+    padding-inline: 0.75rem;
+    text-align: center;
+  }
+
+  .has-lyrics .nowplaying-art-row.has-volume {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: center;
+    justify-content: center;
+    width: auto;
+    height: auto;
+  }
+
+  .has-lyrics .nowplaying-art-row.has-volume .nowplaying-art-menu-wrap.is-audio {
+    flex: none;
+    width: max(4rem, min(10rem, calc(50cqh - 18rem)));
+    height: auto;
+    max-width: none;
+    max-height: none;
+  }
+
+  .has-lyrics .nowplaying-head {
+    grid-column: 1;
+    grid-row: 3;
+    align-self: auto;
+    width: 100%;
+    padding-bottom: 0;
+  }
+
+  .has-lyrics .nowplaying-ctl {
+    grid-column: 1;
+    grid-row: 4;
+    width: 100%;
+  }
+
+  .nowplaying-lyrics-pane {
+    grid-row: 6;
+  }
+
+  /* Full-size transport again: the whole column is theirs. */
+  .has-lyrics .nowplaying-controls-main button {
+    flex: none;
+  }
+
+  .has-lyrics .nowplaying-chips {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (max-width: 639px) {
+  .nowplaying-overlay {
+    padding: 0;
+  }
+
+  .nowplaying-content {
+    overflow-x: hidden;
+    overflow-y: auto;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .nowplaying-layout {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nowplaying-main {
+    flex: none;
+    justify-content: flex-start;
+    gap: 0.875rem;
+    padding: calc(3.25rem + env(safe-area-inset-top, 0px)) 0 0;
+    overflow: visible;
+  }
+
+  .nowplaying-close {
+    top: calc(0.5rem + env(safe-area-inset-top, 0px));
+    left: 0.75rem;
+  }
+
+  .nowplaying-art-menu-wrap.is-audio {
+    width: min(16.875rem, 72%);
+  }
+
+  .nowplaying-head {
+    width: 100%;
+    padding: 0 0.75rem 0 1.25rem;
+  }
+
+  .nowplaying-title {
+    font-size: 1.25rem;
+  }
+
+  /* The controls share the artwork's background; only Up next / Lyrics
+     below is the lighter surface. */
+  .nowplaying-ctl {
+    width: 100%;
+    padding: 0.25rem 1rem 0.875rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nowplaying-art-row.has-volume {
+    --np-art-w: min(16.875rem, 72%);
+  }
+
+  .nowplaying-controls .nowplaying-play-btn {
+    width: 3.75rem;
+    height: 3.75rem;
+  }
+
+  .nowplaying-volume input {
+    width: 5rem;
+  }
+
+  .nowplaying-side {
+    flex: none;
+    min-height: 18.75rem;
+    border-left: none;
+  }
+
+  .nowplaying-side-head {
+    min-height: 0;
+    padding: 0.5rem 1rem 0;
+  }
+
+  .nowplaying-side-pane {
+    --queue-sticky-offset: 0px;
+    flex: none;
+    overflow: visible;
+    padding: 0.5rem 0.75rem calc(2rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .nowplaying-side-previous {
+    padding: 0 0.25rem 0.375rem;
+  }
+
+}
+
+/* Opened from the Now playing tab with nothing on. */
+.nowplaying-empty {
+  margin: auto;
+  padding: 2rem 1rem;
+  color: var(--text-dim);
+  text-align: center;
+}

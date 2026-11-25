@@ -1,0 +1,90 @@
+apply plugin: 'com.android.application'
+
+// The app carries the web app's version (web/package.json).
+def webVersion = new groovy.json.JsonSlurper().parse(file("../../../web/package.json")).version
+// 0.18.3 -> 18003: Android only installs an update whose code is higher.
+// Three digits each for minor and patch, so 0.21.100 still sorts above
+// 0.21.99 and below 0.22.0.
+def versionParts = (webVersion.tokenize('.-+') + ['0', '0', '0']).take(3).collect { (it =~ /^\d+/) ? (it =~ /^\d+/)[0].toInteger() : 0 }
+def webVersionCode = versionParts[0] * 1000000 + versionParts[1] * 1000 + versionParts[2]
+
+// The release key (mobile/release-apk.sh passes these). Without them only
+// the debug build can be made.
+def releaseKeystore = System.getenv('ATRIO_KEYSTORE')
+
+android {
+    namespace = "io.github.dorksoul.atriolyric"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId = "io.github.dorksoul.atriolyric"
+        minSdk = rootProject.ext.minSdkVersion
+        targetSdk = rootProject.ext.targetSdkVersion
+        versionCode = webVersionCode
+        versionName = webVersion
+    }
+    androidResources {
+        // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+        // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+        ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+    }
+    buildFeatures {
+        buildConfig = true
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+    signingConfigs {
+        if (releaseKeystore) {
+            release {
+                storeFile = file(releaseKeystore)
+                storePassword = System.getenv('ATRIO_KEYSTORE_PASSWORD')
+                keyAlias = System.getenv('ATRIO_KEY_ALIAS') ?: 'atriolyric'
+                keyPassword = System.getenv('ATRIO_KEY_PASSWORD') ?: System.getenv('ATRIO_KEYSTORE_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            // `./gradlew assembleDebug -Patrio.minifyDebug`: the debug build
+            // through R8 like the release, so the emulator suite (which needs
+            // a debuggable WebView) can check that shrinking broke nothing.
+            if (project.hasProperty('atrio.minifyDebug')) {
+                minifyEnabled = true
+                shrinkResources = true
+                proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            }
+        }
+        release {
+            if (releaseKeystore) signingConfig = signingConfigs.release
+            // R8 shrinks and optimises the release build. Capacitor's own
+            // consumer rules keep the plugin and its @PluginMethod methods
+            // (it finds them by reflection); the manifest keeps the services
+            // and activities. See proguard-rules.pro for ours.
+            minifyEnabled = true
+            shrinkResources = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    implementation "androidx.media3:media3-exoplayer:$media3Version"
+    implementation "androidx.media3:media3-exoplayer-hls:$media3Version"
+    implementation "androidx.media3:media3-session:$media3Version"
+    implementation "androidx.media3:media3-ui:$media3Version"
+    implementation "androidx.media3:media3-datasource:$media3Version"
+    testImplementation "junit:junit:$junitVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+kotlin {
+    jvmToolchain(21)
+}
+
+apply from: 'capacitor.build.gradle'

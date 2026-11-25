@@ -1,0 +1,23 @@
+/* Lyrics */
+
+.modal-panel.lyrics-content {
+  max-width: 32rem;
+}
+
+.lyrics-body {
+  margin-top: 0.5rem;
+}
+
+.lyrics-text {
+  white-space: pre-wrap;
+  font-family: inherit;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.lyrics-source {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  margin-top: 1rem;
+}
+

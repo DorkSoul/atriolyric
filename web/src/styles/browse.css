@@ -1,0 +1,198 @@
+/* Shared browse-page pieces: the toolbar row at the top of
+   a tab's page (filters, sort, view mode), section headings with their links,
+   and the token chip used for applied filters ("Genre: Pop ✕",
+   "Search: love ✕"). */
+
+.page-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  min-width: 0;
+}
+
+/* Pushes what follows it to the right end of the row (desktop). */
+.page-toolbar-gap {
+  flex: 1;
+}
+
+.page-toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+/* "SORT", "VIEW": small caps label before a group of chips. */
+.page-toolbar-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-left: var(--space-2);
+}
+
+/* SelectMenu (components/SelectMenu.tsx): the app's drop-down. The chip
+   names the current choice; the menu opens at the chip in a fixed layer. */
+.select-menu-toggle {
+  max-width: 16rem;
+  min-width: 0;
+  gap: var(--space-2);
+}
+
+.select-menu-toggle .select-menu-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-menu-toggle svg {
+  flex: none;
+  color: var(--text-faint);
+}
+
+.browse-sort-panel.select-menu-panel {
+  position: fixed;
+  right: auto;
+  z-index: 210;
+  width: auto;
+  margin-top: 0;
+  max-height: min(60vh, 24rem);
+  overflow-y: auto;
+}
+
+.page-toolbar .chip svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+
+/* An applied filter: quiet fill, full text colour, an ✕ to remove it. */
+.chip.chip-token {
+  background: var(--surface-2);
+  border-color: var(--surface-2);
+  color: var(--text);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.chip.chip-token > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip.chip-token svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex: none;
+  color: var(--text-dim);
+}
+
+@media (hover: hover) {
+  .chip.chip-token:hover {
+    background: var(--surface-3);
+    border-color: var(--surface-3);
+  }
+}
+
+/* A section heading with links on the right. */
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  min-width: 0;
+}
+
+.sec-head h2,
+.sec-head h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.sec-head-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* A text link styled button (History, View full search, Regenerate…). */
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
+  color: var(--accent-text);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  text-decoration: none;
+  background: none;
+  border: 0;
+}
+
+.text-link svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.text-link:disabled {
+  opacity: 0.6;
+}
+
+@media (hover: hover) {
+  .text-link:hover:not(:disabled) {
+    color: var(--accent-text-hover);
+  }
+}
+
+@media (max-width: 639px) {
+  .sec-head {
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* A finger-sized tap area for text links on a phone. */
+  .text-link {
+    min-height: 2rem;
+  }
+
+  .page-toolbar-gap {
+    display: none;
+  }
+}
+
+.browse-sort-popover {
+  position: relative;
+  display: inline-flex;
+}
+
+.browse-sort-direction {
+  width: 0.85rem !important;
+  height: 0.85rem !important;
+  margin-left: -0.125rem;
+}
+
+/* A line of explanation at the top of a page. */
+.page-note {
+  margin: 0 0 var(--space-4);
+  color: var(--text-faint);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}

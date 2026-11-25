@@ -1,0 +1,205 @@
+/* Multi-device */
+
+.player-remote-note {
+  color: var(--text-dim);
+}
+
+.device-picker {
+  position: relative;
+  flex-shrink: 0;
+  order: 5;
+}
+
+.device-picker-toggle {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 0.35rem 0.5rem;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .device-picker-toggle:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+}
+
+.device-name {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .device-picker-toggle {
+    padding: 0.3rem 0.7rem;
+  }
+
+  .device-name {
+    display: inline;
+  }
+}
+
+.device-picker-panel {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  margin-bottom: 0.5rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  min-width: 12rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem;
+  box-shadow: var(--shadow-lg);
+  z-index: 20;
+}
+
+/* In the top bar (TopBarDevicePicker) the menu drops down instead. */
+.device-picker-down .device-picker-panel {
+  top: 100%;
+  bottom: auto;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  z-index: 60;
+}
+
+.device-picker-down {
+  order: 0;
+}
+
+.device-picker-down .device-picker-toggle {
+  min-height: var(--chip-h);
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-color: var(--border-strong);
+}
+
+.device-picker-down .device-name {
+  display: inline-block;
+  margin-left: 0.3em;
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+@media (max-width: 639px) {
+  .device-picker-down .device-name {
+    display: none;
+  }
+
+  .device-picker-down .device-picker-toggle {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: none;
+    font-size: 1.05rem;
+  }
+}
+
+.device-picker-panel button {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+@media (hover: hover) {
+  .device-picker-panel button:hover {
+    background: var(--surface-3);
+  }
+}
+
+.device-picker-panel button.device-active {
+  color: var(--accent-text);
+}
+
+.device-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.device-picker-row button:first-child {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.device-remove-btn {
+  flex-shrink: 0;
+  color: var(--text-faint);
+  padding: 0.5rem 0.5rem !important;
+}
+
+@media (hover: hover) {
+  .device-remove-btn:hover {
+    color: var(--danger);
+    background: var(--surface-3);
+  }
+}
+
+/* A highlighted note with an action: the one-time Last.fm notice in
+   Settings, the unrecorded-art clean-up in Admin. */
+.notice-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin: 0.5rem 0 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-muted);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.notice-box p {
+  flex: 1 1 20rem;
+  margin: 0;
+}
+
+.admin-split-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 32rem;
+}
+
+.admin-split-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.admin-split-form textarea {
+  font: inherit;
+  resize: vertical;
+  /* Like the other inputs (base.css), not the browser's grey box. */
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.8rem;
+  transition: border-color var(--transition);
+}
+
+.admin-split-form textarea:focus {
+  border-color: var(--accent-text);
+}
+
+.admin-split-form textarea:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.admin-split-form .primary {
+  align-self: flex-start;
+}
+

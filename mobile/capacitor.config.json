@@ -1,0 +1,8 @@
+{
+  "appId": "io.github.dorksoul.atriolyric",
+  "appName": "Atriolyric",
+  "webDir": "shell-dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

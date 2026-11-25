@@ -1,0 +1,20 @@
+/* Forms and labels
+   A visible label above a control, used on the login and setup screens.
+   Error styling covers `login-error`, the shared `form-error` class and
+   settings messages. */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-field > label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin: 0;
+}

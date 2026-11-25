@@ -1,0 +1,29 @@
+.git
+.github
+.claude
+.codex
+.ruff_cache
+.pytest_cache
+briefs
+docs
+compose.yaml
+dev-library
+dev-library-private
+server/.pytest_cache
+server/.ruff_cache
+server/.venv
+server/.coverage
+server/htmlcov
+server/data
+server/tests
+web/dist
+# The Android project: built on a workstation, never in the image.
+mobile
+web/node_modules
+# web/tests is NOT ignored: `npm run build` runs `tsc -b`, which type-checks
+# the Playwright configs and they import from tests/. The tests only reach the
+# build stage, never the final image.
+web/test-results
+web/playwright-report
+**/__pycache__
+**/*.pyc

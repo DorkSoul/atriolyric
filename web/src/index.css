@@ -1,0 +1,39 @@
+/* The app's global stylesheet, one file per component or area in
+   src/styles/. The order below is the cascade order: a later file wins over
+   an earlier one at equal specificity, so do not reorder these imports. */
+@import './styles/base.css';
+@import './styles/seek-bars.css';
+@import './styles/app-shell.css';
+@import './styles/browse.css';
+@import './styles/track-list.css';
+@import './styles/playlists.css';
+@import './styles/player-bar.css';
+@import './styles/login.css';
+@import './styles/admin.css';
+@import './styles/videos.css';
+@import './styles/devices.css';
+@import './styles/modals.css';
+@import './styles/lyrics.css';
+@import './styles/discovery.css';
+@import './styles/settings.css';
+@import './styles/specify-mix.css';
+@import './styles/settings-sections.css';
+@import './styles/radio.css';
+@import './styles/bulk-edit.css';
+@import './styles/art.css';
+@import './styles/home.css';
+@import './styles/library-info.css';
+@import './styles/albums-artists.css';
+@import './styles/file-browser.css';
+@import './styles/now-playing.css';
+@import './styles/now-playing-video.css';
+@import './styles/side-panel.css';
+@import './styles/toasts.css';
+@import './styles/update-prompt.css';
+@import './styles/labels.css';
+@import './styles/equaliser.css';
+@import './styles/more-menu.css';
+@import './styles/info-modals.css';
+@import './styles/accessibility.css';
+@import './styles/confirm-dialog.css';
+@import './styles/focus.css';

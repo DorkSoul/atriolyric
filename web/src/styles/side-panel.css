@@ -1,0 +1,444 @@
+/* The desktop side panel (SidePanel.tsx), 1200px and wider: full artwork,
+   the song's lines and heart, a seek bar, one row of controls, then Up next.
+   The whole panel is one scroll area; the Up next header sticks to its top
+   while the queue scrolls under it. */
+
+.side-panel {
+  grid-area: panel;
+  display: flex;
+  flex-direction: column;
+  /* The default width is also the narrowest it goes; the resizer
+     (SidePanel.tsx) can widen it up to max-width via --side-panel-width. */
+  --side-panel-min: 20rem;
+  position: relative;
+  width: max(var(--side-panel-min), var(--side-panel-width, 0px));
+  min-width: var(--side-panel-min);
+  max-width: max(var(--side-panel-min), min(40vw, 36rem));
+  min-height: 0;
+  padding: var(--space-4) var(--space-4) 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+}
+
+@media (min-width: 1600px) {
+  .side-panel {
+    --side-panel-min: 22rem;
+  }
+}
+
+/* The resize handle along the panel's left edge. A zero-height sticky
+   row at the top of the scroll area (so it stays put while the panel
+   scrolls), whose ::before is the full-height 6px grab strip. */
+.side-panel-resizer {
+  position: sticky;
+  top: calc(-1 * var(--space-4));
+  z-index: 3;
+  flex: none;
+  width: 6px;
+  height: 0;
+  margin: calc(-1 * var(--space-4)) 0 var(--space-4) calc(-1 * var(--space-4) - 1px);
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.side-panel-resizer::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 100dvh;
+}
+
+.side-panel-resizer::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 2px;
+  height: 100dvh;
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+
+.side-panel-resizer:focus-visible {
+  outline: none;
+}
+
+.side-panel-resizer:focus-visible::after,
+.side-panel-resizing .side-panel-resizer::after {
+  background: var(--accent);
+}
+
+@media (hover: hover) {
+  .side-panel-resizer:hover::after {
+    background: color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+}
+
+/* While dragging: no text selection anywhere, and the resize cursor even
+   where the pointer runs ahead of the handle. */
+.side-panel-resizing,
+.side-panel-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+.side-panel-player {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: none;
+}
+
+.side-panel-art {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border-radius: var(--radius-md);
+}
+
+.side-panel .art-side-panel {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+}
+
+.art-side-panel .art-fallback {
+  font-size: 4rem;
+}
+
+/* .player-track-info's grid-area belongs to the player bar; here it is a row. */
+.side-panel-info {
+  grid-area: auto;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.side-panel-info .player-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.side-panel-title,
+.side-panel-info .track-subtitle,
+.side-panel-album {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.side-panel-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.side-panel-info .track-subtitle {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+}
+
+.side-panel-album {
+  color: var(--accent-text);
+  font-size: 0.8125rem;
+}
+
+.side-panel-album a {
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .side-panel-album a:hover {
+    text-decoration: underline;
+  }
+}
+
+.side-panel-icon-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border-radius: var(--radius-full);
+  color: var(--text-dim);
+  font-size: 1.1rem;
+}
+
+.side-panel-icon-btn.active {
+  color: var(--accent-text);
+}
+
+@media (hover: hover) {
+  .side-panel-icon-btn:hover {
+    color: var(--text);
+    background: var(--surface-2);
+  }
+
+  .side-panel-icon-btn.active:hover {
+    color: var(--accent-text-hover);
+  }
+}
+
+/* Seek: elapsed | line | length. The line is the player bar's slider drawn
+   inline (ProgressSeek), its hit area taller than the line. */
+.side-panel-seek {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.side-panel-seek .player-time:last-child {
+  text-align: right;
+}
+
+.player-progress-track.player-progress-inline {
+  position: relative;
+  top: auto;
+  flex: 1;
+  min-width: 0;
+  height: 1.25rem;
+}
+
+.player-progress-inline::before,
+.player-progress-inline .player-progress-fill {
+  top: 50%;
+  height: 4px;
+  border-radius: var(--radius-full);
+  transform: translateY(-50%);
+}
+
+.player-progress-inline .player-seek-tooltip {
+  top: -3rem;
+}
+
+/* One row: volume | previous, play, next | more. .player-controls's grid
+   placement is the bar's; here it simply spans the panel. */
+.side-panel-controls.player-controls {
+  grid-area: auto;
+  justify-self: stretch;
+  gap: 0.375rem;
+}
+
+.side-panel-controls .side-panel-play {
+  width: 3.25rem;
+  height: 3.25rem;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 1.35rem;
+}
+
+@media (hover: hover) {
+  .side-panel-controls .side-panel-play:hover {
+    background: var(--text);
+    color: var(--bg);
+    transform: scale(1.04);
+  }
+}
+
+.side-panel-volume input {
+  width: 4.5rem;
+}
+
+/* Previous / play / next centred in the panel: the first and last columns
+   share the spare width equally, so the "more" (or Stop) button at the end
+   does not pull play off centre. */
+.side-panel-controls.side-panel-transport {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.side-panel-controls.side-panel-transport-radio {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.side-panel-transport > :last-child {
+  justify-self: end;
+}
+
+/* Playing view: the artwork (square, a little narrower) with the volume
+   upright in a narrow column to its right, as tall as the artwork; the song,
+   seek bar and controls under them, full width. */
+.side-panel-now {
+  --side-volume-w: 1.75rem;
+  --side-volume-gap: var(--space-3);
+}
+
+.side-panel-art-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--side-volume-w);
+  gap: var(--side-volume-gap);
+  align-items: stretch;
+}
+
+.side-panel-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* Heart, and the song's "more" menu under it. */
+.side-panel-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: none;
+  gap: 0.125rem;
+}
+
+/* Centred on the whole panel. */
+.side-panel-controls.side-panel-transport-centred {
+  display: flex;
+  justify-content: center;
+}
+
+.side-panel-volume-col .side-panel-volume {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: var(--space-2);
+  height: 100%;
+}
+
+/* An upright range input, lowest at the bottom. */
+.side-panel-volume-col .side-panel-volume input {
+  flex: 1;
+  width: 1.25rem;
+  min-height: 5rem;
+  writing-mode: vertical-lr;
+  direction: rtl;
+}
+
+/* Volume on its own line under the controls, using the full width (radio). */
+.side-panel-volume-row .side-panel-volume {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.side-panel-volume-row .side-panel-volume input {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+.side-panel-controls .more-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 1.1rem;
+}
+
+.side-panel-controls .side-panel-stop {
+  margin-left: 0;
+  width: auto;
+  height: auto;
+  min-height: var(--chip-h);
+  padding: 0 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.side-panel-player-empty {
+  align-items: center;
+  text-align: center;
+  padding-bottom: var(--space-4);
+}
+
+.side-panel-empty-art {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text-faint);
+  font-size: 4rem;
+  opacity: 0.6;
+}
+
+.side-panel-empty-text {
+  margin: 0;
+  color: var(--text-dim);
+}
+
+.side-panel-player-empty .side-panel-controls {
+  justify-content: center;
+}
+
+/* Up next */
+
+.side-panel-queue {
+  flex: none;
+  margin-top: var(--space-3);
+}
+
+.side-panel-upnext {
+  position: sticky;
+  top: calc(-1 * var(--space-4));
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0 0.375rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+.side-panel-upnext-title {
+  margin: 0 0.25rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.side-panel-upnext-count {
+  margin-right: auto;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.side-panel-upnext .queue-previous-toggle {
+  display: inline-flex;
+  width: auto;
+  margin: 0 0.125rem 0 0;
+  padding: 0.25rem 0.375rem;
+  min-height: 1.75rem;
+  background: none;
+  color: var(--accent-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.side-panel-upnext .side-panel-icon-btn {
+  width: 1.875rem;
+  height: 1.875rem;
+  font-size: 0.95rem;
+}
+
+.side-panel .nowplaying-queue {
+  padding-bottom: var(--space-4);
+}
+
+.side-panel .queue-list {
+  margin-top: 0.25rem;
+}
+
+/* The panel scrolls as a whole: the current row is not pinned under the
+   sticky header. */
+.side-panel .queue-row-current {
+  position: relative;
+  top: auto;
+}

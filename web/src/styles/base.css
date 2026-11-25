@@ -1,0 +1,474 @@
+/* Design tokens: a navy-and-blue dark palette and a light one.
+   PALETTE_SURFACES in settings.ts and the dark copy on .nowplaying-overlay
+   (now-playing.css) mirror the surface colours here: keep all three in step. */
+:root {
+  color-scheme: dark;
+  --bg: #0d1017;
+  --surface: #141925;
+  --surface-2: #1c2231;
+  --surface-3: #283043;
+  --border: #252c3b;
+  --border-strong: #3a4357;
+  --text: #eef1f6;
+  --text-dim: #a6afbf;
+  /* 4.5:1 or better on --bg, --surface and --surface-2. */
+  --text-faint: #8892a4;
+  /* Form-control outlines: 3:1 against the surfaces they sit on (WCAG 1.4.11);
+     --border stays for dividers and card edges. */
+  --border-input: #6b7587;
+  --accent: #5b8def;
+  --accent-hover: #7aa3f5;
+  --accent-muted: rgba(91, 141, 239, 0.16);
+  /* applyAccentColor (settings.ts) re-derives these from the chosen accent;
+     the defaults below are its output for the default accent so first paint
+     is right. --on-accent: text on an accent fill. --accent-text: the accent
+     as text, links and focus rings (4.5:1 on this theme's surfaces). The
+     -dark pair is what the Now Playing overlay reads. */
+  --on-accent: #000000;
+  --accent-text: #6d9af1;
+  --accent-text-hover: #87acf4;
+  --accent-text-dark: #6d9af1;
+  --accent-text-hover-dark: #87acf4;
+  --danger: #f2536b;
+  --danger-text: #f2536b;
+  --success: #3ecf6b;
+  --warning: #e8b339;
+  --radius-xs: 5px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 999px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+  --transition: 150ms ease;
+  /* Spacing scale (4px steps). */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.75rem;
+  --space-8: 2rem;
+  /* Shell sizes (app-shell.css). */
+  --sidebar-width: 224px;
+  --sidebar-width-collapsed: 64px;
+  --top-bar-height: 64px;
+  /* Side padding of the page area: the top bar and .app-main share it. */
+  --page-gutter: 1.75rem;
+  /* Control heights: --control-h for inputs, selects and buttons, --chip-h
+     for the smaller pill buttons. */
+  --control-h: 2.5rem;
+  --chip-h: 2.125rem;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* Theme mode is resolved in JS (system/light/dark -> a concrete choice)
+   and applied as this attribute, rather than mixing a `prefers-color-scheme`
+   media query into the CSS itself - keeps exactly one source of truth for
+   which palette is active. --accent/--accent-hover/--accent-muted are
+   re-applied inline by JS from the user's chosen accent color, on top of
+   whichever palette below is active. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --surface-2: #edf0f6;
+  --surface-3: #dfe4ee;
+  --border: #dde2ea;
+  --border-strong: #c3cad6;
+  --text: #131824;
+  --text-dim: #535d6e;
+  /* 4.5:1 or better on --surface-2. */
+  --text-faint: #626c7d;
+  --border-input: #7b8190;
+  --accent-text: #3f61a5;
+  --accent-text-hover: #345087;
+  --danger: #d92d4f;
+  /* --danger itself is 4.4:1 on the page background; text needs 4.5:1. */
+  --danger-text: #c4223f;
+  --success: #1f9d51;
+  --warning: #b5790a;
+  --shadow-sm: 0 1px 3px rgba(20, 28, 48, 0.08);
+  --shadow-md: 0 12px 32px rgba(20, 28, 48, 0.16);
+  --shadow-lg: 0 16px 40px rgba(20, 28, 48, 0.18);
+}
+
+@media (max-width: 999px) {
+  :root {
+    --page-gutter: 1.25rem;
+  }
+}
+
+@media (max-width: 639px) {
+  :root {
+    --top-bar-height: 60px;
+    --page-gutter: 1rem;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Scrollbars, themed to match the app instead of the browser default -
+   `scrollbar-color` covers Firefox, the `::-webkit-scrollbar*` rules cover
+   Chrome/Safari/Edge. Both read the same theme variables, so they follow
+   dark/light mode and the user's accent color automatically. */
+* {
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border-strong);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+@media (hover: hover) {
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent);
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  /* Mobile browsers with a collapsible URL bar report `100%`/`100vh`
+     against the *largest* possible viewport - with the bar visible (the
+     common case), that leaves a gap the height of the bar at the bottom
+     of the page. `svh` is the *smallest* the viewport ever gets (bar
+     fully expanded), so sizing against it never leaves that gap while
+     the bar is showing; browsers without support just keep 100% above. */
+  height: 100svh;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  accent-color: var(--accent);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  min-height: 2.25rem;
+  min-width: 2.25rem;
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition), transform 100ms ease, opacity var(--transition);
+}
+
+button:disabled {
+  cursor: default;
+}
+
+button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+a {
+  color: var(--accent-text);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+input,
+select {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.8rem;
+  transition: border-color var(--transition);
+}
+
+input::placeholder {
+  color: var(--text-faint);
+}
+
+input:focus,
+select:focus {
+  border-color: var(--accent-text);
+}
+
+.password-input-wrap {
+  position: relative;
+}
+
+.password-input-wrap input {
+  width: 100%;
+  padding-right: 2.25rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  padding: 0.3rem;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+.password-toggle-btn svg {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+@media (hover: hover) {
+  .password-toggle-btn:hover {
+    color: var(--text);
+  }
+}
+
+
+/* Shared controls (some components keep their own classes instead).
+
+   .btn            a pill button: .btn-primary (accent fill), .btn-ghost
+                   (quiet fill); .btn-sm is the chip-height variant.
+   .chip           a small pill toggle or filter; pressed/active state via
+                   aria-pressed="true", aria-current or .active.
+   .badge          a small label ("shared", "admin").
+   .card           a bordered surface block.
+   .switch         <label class="switch"><input type="checkbox" role="switch">
+                   <span class="switch-track" aria-hidden="true"></span>
+                   Label</label> - an on/off pill like "Show missing". */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  padding: 0 1.1rem;
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+}
+
+.btn-ghost {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.btn-sm {
+  min-height: var(--chip-h);
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+}
+
+@media (hover: hover) {
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--surface-3);
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: var(--chip-h);
+  padding: 0 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex: none;
+}
+
+.chip[aria-pressed='true'],
+.chip[aria-current],
+.chip.active {
+  background: var(--accent-muted);
+  border-color: transparent;
+  color: var(--accent-text);
+}
+
+@media (hover: hover) {
+  .chip:hover:not(:disabled) {
+    color: var(--text);
+  }
+
+  .chip[aria-pressed='true']:hover,
+  .chip[aria-current]:hover,
+  .chip.active:hover {
+    color: var(--accent-text-hover);
+  }
+}
+
+.badge {
+  display: inline-block;
+  background: var(--surface-3);
+  color: var(--text-dim);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 0.0625rem 0.4375rem;
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+}
+
+.badge-accent {
+  background: var(--accent-muted);
+  color: var(--accent-text);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--chip-h);
+  padding: 0 0.75rem 0 0.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Without the pill outline, in settings rows and forms; the text may wrap. */
+.switch.switch-plain {
+  min-height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  white-space: normal;
+}
+
+.switch.switch-plain:has(input:checked) {
+  border-color: transparent;
+}
+
+/* The real checkbox covers the pill (so a tap anywhere toggles it) but is
+   invisible; the track draws the state. */
+.switch input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.switch-track {
+  position: relative;
+  flex: none;
+  width: 30px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--surface-3);
+  box-shadow: inset 0 0 0 1px var(--border-input);
+  transition: background var(--transition);
+}
+
+.switch-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: transform var(--transition), background var(--transition);
+}
+
+.switch:has(input:checked) {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.switch input:checked + .switch-track {
+  background: var(--accent);
+  box-shadow: none;
+}
+
+.switch input:checked + .switch-track::after {
+  transform: translateX(12px);
+  background: var(--on-accent);
+}
+
+.switch:has(input:focus-visible) {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switch-track,
+  .switch-track::after {
+    transition: none;
+  }
+}
+
+/* Presses go to the (invisible) checkbox under the drawn track. */
+.switch-track {
+  pointer-events: none;
+}

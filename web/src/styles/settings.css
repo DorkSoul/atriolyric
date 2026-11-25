@@ -1,0 +1,63 @@
+/* Settings / integrations */
+
+/* Settings is a page: one full-width column of cards (see .settings-column)
+   under a row of section chips. The app's own main-content scrolling handles
+   overflow, so the page has no height cap, background or shadow of its own.
+   The side padding matches the other pages (the top bar's title lines up). */
+.settings-page {
+  padding: 0 var(--space-2) var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .settings-page {
+    padding-inline: 0.75rem;
+  }
+}
+
+.settings-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  min-width: 0;
+}
+
+/* The chips stay under the top bar while the cards scroll past, so any
+   section is one tap away. On a phone they scroll sideways instead of
+   wrapping into a tall block. */
+.settings-chips {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) 0 var(--space-3);
+  margin-bottom: var(--space-1);
+  background: var(--bg);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+}
+
+.settings-chips::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .settings-chips {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
+.settings-hint-inline {
+  margin: 0;
+  flex: 1;
+}
+
+/* Phone: the sentence takes its own line and the buttons sit together under it. */
+@media (max-width: 639px) {
+  .settings-row > .settings-hint-inline {
+    flex: 1 1 100%;
+  }
+}
