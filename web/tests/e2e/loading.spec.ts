@@ -350,3 +350,25 @@ test.describe('Now Playing', () => {
     await expect(page.locator('.nowplaying-skeleton')).toHaveCount(0)
   })
 })
+
+test.describe('the viewport', () => {
+  const viewportContent = (page: Page) =>
+    page.locator('meta[name="viewport"]').getAttribute('content')
+
+  test('a browser tab does not extend under the system bars', async ({ page }) => {
+    await installApiMock(page)
+    await page.goto('/#/home')
+    await expect(page.locator('.top-bar')).toBeVisible()
+    await expect.poll(() => viewportContent(page)).toBe('width=device-width, initial-scale=1.0')
+  })
+
+  test('inside the Android app the page keeps viewport-fit=cover', async ({ page }) => {
+    await page.addInitScript(() => {
+      ;(window as unknown as { Capacitor: object }).Capacitor = {}
+    })
+    await installApiMock(page)
+    await page.goto('/#/home')
+    await expect(page.locator('.top-bar')).toBeVisible()
+    expect(await viewportContent(page)).toContain('viewport-fit=cover')
+  })
+})

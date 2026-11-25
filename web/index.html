@@ -9,7 +9,8 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="theme-color" content="#0d1017" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#f4f6fa" media="(prefers-color-scheme: light)" />
-    <!-- viewport-fit=cover: the CSS already pads for the safe-area insets. -->
+    <!-- viewport-fit=cover: the CSS pads for the safe-area insets. public/boot.js
+         drops it in a browser tab, where the browser keeps the system bars. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Atriolyric</title>
     <!-- The page's colour before the stylesheet and the app arrive (the same

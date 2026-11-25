@@ -615,7 +615,8 @@ test.describe('installable app metadata', () => {
     await page.goto('/#/home')
     expect(await page.locator('link[rel="apple-touch-icon"]').getAttribute('href')).toBe('/icons/apple-touch-icon.png')
     expect((await page.request.get('/icons/apple-touch-icon.png')).status()).toBe(200)
-    expect(await page.locator('meta[name="viewport"]').getAttribute('content')).toContain('viewport-fit=cover')
+    // Declared in the HTML for an installed app; boot.js drops it in a browser tab (loading.spec.ts).
+    expect(await (await page.request.get('/')).text()).toContain('viewport-fit=cover')
     const themes = await page.locator('meta[name="theme-color"]').evaluateAll((els) => els.map((el) => el.getAttribute('media')))
     expect(themes).toEqual(['(prefers-color-scheme: dark)', '(prefers-color-scheme: light)'])
   })
