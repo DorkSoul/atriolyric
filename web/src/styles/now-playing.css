@@ -1452,12 +1452,12 @@
     flex: none;
     justify-content: flex-start;
     gap: 0.875rem;
-    padding: calc(3.25rem + env(safe-area-inset-top, 0px)) 0 0;
+    padding: calc(3.25rem + var(--safe-top)) 0 0;
     overflow: visible;
   }
 
   .nowplaying-close {
-    top: calc(0.5rem + env(safe-area-inset-top, 0px));
+    top: calc(0.5rem + var(--safe-top));
     left: 0.75rem;
   }
 
@@ -1510,7 +1510,7 @@
     --queue-sticky-offset: 0px;
     flex: none;
     overflow: visible;
-    padding: 0.5rem 0.75rem calc(2rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.5rem 0.75rem calc(2rem + var(--safe-bottom));
   }
 
   .nowplaying-side-previous {

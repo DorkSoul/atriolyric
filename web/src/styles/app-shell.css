@@ -239,7 +239,7 @@
   flex: none;
   height: var(--top-bar-height);
   padding: 0 var(--page-gutter);
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: var(--safe-top);
   box-sizing: content-box;
 }
 
@@ -567,7 +567,7 @@
   width: 100%;
   max-width: none;
   margin: auto 0 0;
-  padding: 0.75rem 0.75rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  padding: 0.75rem 0.75rem calc(1.25rem + var(--safe-bottom));
   border-bottom: 0;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   gap: 0.5rem;
@@ -653,7 +653,7 @@
   .bottom-tabs {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    padding: 2px 0.25rem calc(3px + env(safe-area-inset-bottom, 0px));
+    padding: 2px 0.25rem calc(3px + var(--safe-bottom));
     background: var(--surface);
     border-top: 1px solid var(--border);
   }
@@ -705,7 +705,7 @@
 @media (min-width: 640px) {
   /* The bottom row on desktop: keep the player clear of a home indicator. */
   .app-shell > .player-bar {
-    padding-bottom: calc(0.55rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(0.55rem + var(--safe-bottom));
   }
 }
 
@@ -787,7 +787,7 @@
   position: fixed;
   left: 50%;
   /* At the top so a thumb on the player controls never covers it. */
-  top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+  top: calc(var(--safe-top) + 0.75rem);
   transform: translateX(-50%);
   z-index: 190;
   display: flex;

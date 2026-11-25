@@ -152,7 +152,7 @@
 
 .offline-notice {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 0.4rem);
+  top: calc(var(--safe-top) + 0.4rem);
   left: 50%;
   translate: -50% 0;
   z-index: 300;

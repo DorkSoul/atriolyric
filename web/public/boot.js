@@ -1,11 +1,10 @@
 // Runs as soon as the page's HTML is read, while the app's own code is still
 // downloading (a plain script file: the server's Content-Security-Policy
 // allows no inline scripts). Three jobs, all best-effort:
-// 1. In a browser tab, drop viewport-fit=cover. The Android app and an
-//    installed PWA draw under the system bars and pad for them through the
-//    safe-area insets; in a tab the browser keeps those bars, but some
-//    browsers still report their height as an inset, which would leave an
-//    empty strip under the bottom bar.
+// 1. Mark the page when it has a window of its own (the Android app or an
+//    installed PWA): only then does it draw under the system bars and pad
+//    for their insets (html[data-own-window], styles/base.css). In a browser
+//    tab it also drops viewport-fit=cover, as the browser keeps the bars.
 // 2. Apply the saved theme, so the placeholder in #root already has the right
 //    colours (main.tsx applies it again).
 // 3. Start the sign-in check (/api/auth/me) and the first-run check
@@ -18,6 +17,7 @@
       !!window.Capacitor ||
       window.navigator.standalone === true ||
       window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches
+    if (ownWindow) document.documentElement.setAttribute('data-own-window', '')
     var dropCover = function () {
       var viewport = document.querySelector('meta[name="viewport"]')
       if (!viewport) return false
@@ -27,7 +27,7 @@
     // This script is async and may run before the meta has been parsed.
     if (!ownWindow && !dropCover()) document.addEventListener('DOMContentLoaded', dropCover)
   } catch {
-    // Keeps the meta as written: at worst the strip under the bottom bar.
+    // main.tsx sets the mark again; the meta stays as written.
   }
   try {
     var raw = localStorage.getItem('atriolyric.settings')

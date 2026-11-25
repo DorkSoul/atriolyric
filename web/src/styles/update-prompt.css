@@ -3,7 +3,7 @@
 .update-prompt {
   position: fixed;
   left: 50%;
-  top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+  top: calc(var(--safe-top) + 0.75rem);
   transform: translateX(-50%);
   z-index: 210;
   display: flex;

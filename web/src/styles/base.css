@@ -1,3 +1,18 @@
+/* The system bars' insets, for padding the page clear of them. Only the
+   Android app and an installed PWA draw under the system bars
+   (html[data-own-window], set by boot.js and main.tsx). In a browser tab the
+   browser keeps those bars, yet some browsers (Firefox for Android) still
+   report the navigation bar as an inset, which would leave an empty strip
+   under the bottom bar; there they are 0. */
+:root {
+  --safe-top: 0px;
+  --safe-bottom: 0px;
+}
+:root[data-own-window] {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Design tokens: a navy-and-blue dark palette and a light one.
    PALETTE_SURFACES in settings.ts and the dark copy on .nowplaying-overlay
    (now-playing.css) mirror the surface colours here: keep all three in step. */

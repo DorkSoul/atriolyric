@@ -4,7 +4,7 @@
   position: fixed;
   left: 50%;
   /* At the top, under the loading pill, so a thumb never covers them. */
-  top: calc(env(safe-area-inset-top, 0px) + 3.5rem);
+  top: calc(var(--safe-top) + 3.5rem);
   transform: translateX(-50%);
   z-index: 200;
   display: flex;

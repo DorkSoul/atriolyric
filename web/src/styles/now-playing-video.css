@@ -32,7 +32,7 @@
   min-height: 0;
   justify-content: flex-end;
   gap: 0.2rem;
-  padding: 0 1.25rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  padding: 0 1.25rem calc(1rem + var(--safe-bottom));
   overflow: hidden;
   color: #fff;
   --text-dim: rgba(255, 255, 255, 0.7);
@@ -91,7 +91,7 @@
 
 .video-mode .nowplaying-close {
   position: absolute;
-  top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  top: calc(0.5rem + var(--safe-top));
   left: 0.75rem;
   width: auto;
   color: #fff;

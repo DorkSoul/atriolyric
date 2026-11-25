@@ -360,15 +360,32 @@ test.describe('the viewport', () => {
     await page.goto('/#/home')
     await expect(page.locator('.top-bar')).toBeVisible()
     await expect.poll(() => viewportContent(page)).toBe('width=device-width, initial-scale=1.0')
+    // No padding for the system bars' insets, which some browsers report anyway.
+    expect(await page.locator('html').getAttribute('data-own-window')).toBeNull()
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom').trim())).toBe('0px')
   })
 
-  test('inside the Android app the page keeps viewport-fit=cover', async ({ page }) => {
+  test('inside the Android app the page keeps viewport-fit=cover and pads for the system bars', async ({ page }) => {
     await page.addInitScript(() => {
       ;(window as unknown as { Capacitor: object }).Capacitor = {}
     })
     await installApiMock(page)
     await page.goto('/#/home')
     await expect(page.locator('.top-bar')).toBeVisible()
+    expect(await viewportContent(page)).toContain('viewport-fit=cover')
+    expect(await page.locator('html').getAttribute('data-own-window')).toBe('')
+  })
+
+  test('an installed web app pads for the system bars', async ({ page }) => {
+    await page.addInitScript(() => {
+      const real = window.matchMedia.bind(window)
+      window.matchMedia = (query: string) =>
+        query.includes('display-mode: standalone') ? ({ ...real(query), matches: true, media: query } as MediaQueryList) : real(query)
+    })
+    await installApiMock(page)
+    await page.goto('/#/home')
+    await expect(page.locator('.top-bar')).toBeVisible()
+    expect(await page.locator('html').getAttribute('data-own-window')).toBe('')
     expect(await viewportContent(page)).toContain('viewport-fit=cover')
   })
 })

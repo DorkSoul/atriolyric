@@ -26,6 +26,17 @@ document.addEventListener(
   true,
 )
 
+// The page draws under the system bars only in a window of its own (the
+// Android app or an installed PWA); see --safe-top/--safe-bottom in
+// styles/base.css. boot.js sets this too, earlier.
+if (
+  isNativeApp() ||
+  (navigator as Navigator & { standalone?: boolean }).standalone === true ||
+  window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches
+) {
+  document.documentElement.setAttribute('data-own-window', '')
+}
+
 if (isNativeApp()) {
   // The Android app keeps its own copy of the page (WebCache.kt in mobile/),
   // which is what opens with no connection: a service worker would answer
