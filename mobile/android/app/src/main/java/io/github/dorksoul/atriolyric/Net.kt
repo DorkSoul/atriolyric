@@ -94,11 +94,12 @@ object Net {
 
     /** What the players read through: a downloaded copy if there is one (the
      * download cache, never written to from here), the network otherwise, and
-     * plain files for saved artwork. */
-    fun playback(context: Context): DataSource.Factory {
+     * plain files for saved artwork. The music players (`music`) also read the
+     * songs held ahead of the queue ([StreamCache]) before the network. */
+    fun playback(context: Context, music: Boolean = false): DataSource.Factory {
         val cached = CacheDataSource.Factory()
             .setCache(Downloads.cache(context))
-            .setUpstreamDataSourceFactory(http())
+            .setUpstreamDataSourceFactory(if (music) StreamCache.reader(context, http()) else http())
             .setCacheWriteDataSinkFactory(null)
             .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
         return DefaultDataSource.Factory(context, cached)

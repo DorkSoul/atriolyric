@@ -81,7 +81,8 @@ object Downloads {
 
     private fun prefs(context: Context) = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
-    private fun database(context: Context): StandaloneDatabaseProvider =
+    /** Shared with [StreamCache]: one database holds both caches' indexes. */
+    fun database(context: Context): StandaloneDatabaseProvider =
         databaseInstance ?: StandaloneDatabaseProvider(context.applicationContext).also { databaseInstance = it }
 
     private fun root(context: Context): File =

@@ -23,6 +23,7 @@ import {
   setAeroplaneMode,
   SHELL_ORIGIN,
   slots,
+  type Slot,
   startApp,
   stopApp,
   swipeAway,
@@ -128,6 +129,89 @@ test('2 a queue plays through the native service and advances with the screen of
   await expect.poll(async () => (await server.state()).media_item_id).toBe(ids.Four)
   await expect.poll(() => server.playCounts([ids.One, ids.Two])).toEqual({ [ids.One]: 1, [ids.Two]: 1 })
   expect((await activeSlot(page))?.mediaId).toBe(ids.Four)
+  await page.locator('.player-bar, .side-panel-player').getByRole('button', { name: 'Pause', exact: true }).first().click()
+  await expect.poll(() => mediaSession().state).toBe('PAUSED')
+})
+
+test('2a a short loss of signal does not stop streamed music, and once the signal is back the queue carries on with the server', async () => {
+  // Nothing in the album is downloaded yet (test 3 does that). As in a
+  // browser, the tracks ahead are kept: the playing and next ones in the two
+  // native players, the ones after on disk. "One" is 20 s, "Two" 3 s, "Three" and "Four" 20 s each.
+  const page = await attach(onServer)
+  await page.goto(`${WEB_URL}/${ALBUM_HASH}`)
+  await page.locator('.hero-play-btn[aria-label="Play"]').click()
+  await expect(trackTitle(page)).toContainText('One')
+  await expect.poll(async () => (await activeSlot(page))?.playing, { timeout: 30_000 }).toBe(true)
+  await expect.poll(async () => (await native<{ mediaIds: number[] }>(page, 'streamHeld')).mediaIds.sort(), { timeout: 15_000 })
+    .toEqual([ids.Three, ids.Four].sort())
+  note('held ahead', { held: await native(page, 'streamHeld'), slots: await slots(page) })
+
+  // Disconnection: no radios and no tunnel to this machine, the server is gone.
+  setAeroplaneMode(true)
+  adb('reverse', '--remove-all')
+  let offline = true
+  try {
+    await expect(page.getByTestId('offline-notice')).toBeVisible({ timeout: 30_000 })
+    note('offline while playing', { slot: await activeSlot(page), session: mediaSession() })
+    await expect.poll(() => mediaSession().state).toBe('PLAYING')
+    // The playing track plays to its end, the next one (in the standby
+    // player) after it, then the one after that from the copy on disk.
+    await expect.poll(() => mediaSession().description, { timeout: 30_000, intervals: [500] }).toContain('Two')
+    await expect.poll(() => mediaSession().description, { timeout: 15_000, intervals: [500] }).toContain('Three')
+    await expect.poll(() => mediaSession().state).toBe('PLAYING')
+    const t0 = await position(page)
+    await expect.poll(() => position(page), { timeout: 10_000 }).toBeGreaterThan(t0 + 2)
+    expect(await activeSlot(page)).toMatchObject({ mediaId: ids.Three, error: null })
+    expect(await page.getByTestId('offline-notice').isVisible()).toBe(true)
+    note('offline, third track from disk', { slot: await activeSlot(page), session: mediaSession() })
+
+    // Reconnection, while "Three" still plays: the tunnel first, so the
+    // app's check when the radios come back already finds the server.
+    adb('reverse', `tcp:${PHONE_PORT}`, `tcp:${PHONE_PORT}`)
+    setAeroplaneMode(false)
+    offline = false
+    // Watched every 250 ms until 3 s after the app is back: the music must
+    // not stop, restart or jump back for the change-over. (What Android's
+    // media session reports can read PAUSED for a moment while the server
+    // takes the queue back, with the player itself playing on: the native
+    // player is what is checked.)
+    const samples: { slot?: Slot; music: string; session: string | null; notice: number }[] = []
+    let backAt = 0
+    for (const deadline = Date.now() + 60_000; Date.now() < deadline && (!backAt || Date.now() < backAt + 3_000);) {
+      const all = await slots(page)
+      const notice = await page.getByTestId('offline-notice').count()
+      if (!notice && !backAt) backAt = Date.now()
+      const music = all.filter((x) => x.slot === 'a' || x.slot === 'b').map((x) => `${x.slot}:${x.mediaId}${x.playing ? ' playing' : ''}`).join(', ')
+      samples.push({ slot: all.find((x) => x.active), music, session: mediaSession().state, notice })
+      await new Promise((resolve) => setTimeout(resolve, 250))
+    }
+    note('reconnecting', samples.map((x) => `${x.slot?.slot}/${x.slot?.loadId} m=${x.slot?.mediaId} ${x.slot?.position.toFixed(1)}s [${x.music}] session=${x.session} notice=${x.notice}`))
+    expect(backAt).toBeGreaterThan(0)
+    expect(samples.filter((x) => !x.slot?.playing || x.slot.error)).toEqual([])
+    for (let i = 1; i < samples.length; i += 1) {
+      const [was, now] = [samples[i - 1].slot!, samples[i].slot!]
+      if (now.mediaId !== was.mediaId) continue
+      expect(now.loadId).toBe(was.loadId)
+      expect(now.position).toBeGreaterThanOrEqual(was.position - 0.3)
+    }
+  } finally {
+    if (offline) {
+      adb('reverse', `tcp:${PHONE_PORT}`, `tcp:${PHONE_PORT}`)
+      setAeroplaneMode(false)
+    }
+  }
+  note('back online', { slot: await activeSlot(page), session: mediaSession() })
+  // The server takes the device's place in the queue and follows it on:
+  // "Four" plays with the server connected, and the server says so.
+  await expect.poll(async () => {
+    const state = await server.state()
+    return [state.media_item_id, state.is_playing]
+  }, { timeout: 45_000 }).toEqual([ids.Four, true])
+  await expect.poll(() => mediaSession().description, { timeout: 30_000 }).toContain('Four')
+  const f0 = await position(page)
+  await expect.poll(() => position(page), { timeout: 10_000 }).toBeGreaterThan(f0 + 1)
+  expect(await activeSlot(page)).toMatchObject({ mediaId: ids.Four, playing: true, error: null })
+  note('online again, fourth track', { server: await server.state().then((s) => [s.media_item_id, s.is_playing, s.position_seconds]), slot: await activeSlot(page) })
   await page.locator('.player-bar, .side-panel-player').getByRole('button', { name: 'Pause', exact: true }).first().click()
   await expect.poll(() => mediaSession().state).toBe('PAUSED')
 })
@@ -580,11 +664,12 @@ test('10 a server that carries the app offers it to a browser, and a newer one t
     const prompt = page.getByTestId('app-update-prompt')
     await expect(prompt).toBeVisible({ timeout: 30_000 })
     await expect(prompt).toContainText('99.0.0')
-    await expect(prompt).toContainText('you have 0.')
+    const installed = (await native<{ appVersion: string }>(page, 'shellState')).appVersion
+    await expect(prompt).toContainText(`you have ${installed})`)
     note('update prompt', await prompt.innerText())
     // No "Get the Android app" inside the app itself.
     await page.goto(`${WEB_URL}/#/settings/about`)
-    await expect(page.getByTestId('app-version')).toContainText('Android app 0.')
+    await expect(page.getByTestId('app-version')).toContainText(`Android app ${installed}`)
     await expect(page.getByRole('link', { name: 'Get the Android app' })).toHaveCount(0)
     // The offered file is this same build: the app fetches it, finds its
     // version code is not higher than its own, and refuses it before

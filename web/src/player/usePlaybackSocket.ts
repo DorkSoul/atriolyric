@@ -38,7 +38,7 @@ import {
 import { playbackDeviceToken, readPlaybackResumeFlag } from './storage'
 import { isNativeApp } from '../native/bridge'
 import { checkOffline, isOffline, noteServerAnswered, onOfflineChange } from '../native/offline'
-import { clearHandback, handback, LocalPlaybackSocket, noteServerState } from '../native/localPlayback'
+import { clearHandback, handback, LOCAL_DEVICE_ID, LocalPlaybackSocket, noteServerState } from '../native/localPlayback'
 
 export interface UsePlaybackSocketArgs {
   showToast: ReturnType<typeof useToast>['showToast']
@@ -446,6 +446,21 @@ export function usePlaybackSocket({
           error: msg.type === 'error' ? msg.message : undefined,
         })
         if (msg.type === 'registered') {
+          // The Android app changing between its server and its own stand-in
+          // (native/localPlayback.ts) is the same device under a new id. Until
+          // the new socket's first state arrives, the state held names the
+          // old id as the active device; read as it is, this page would be a
+          // remote control for that moment and pause the music it is playing.
+          const previousId = lastRegisteredDeviceIdRef.current
+          const swapped = previousId != null && previousId !== msg.device_id &&
+            (previousId === LOCAL_DEVICE_ID || msg.device_id === LOCAL_DEVICE_ID)
+          if (swapped) {
+            const moveActive = (state: PlaybackStateSnapshot | null) => (
+              state && state.active_device_id === previousId ? { ...state, active_device_id: msg.device_id } : state
+            )
+            lastServerStateRef.current = moveActive(lastServerStateRef.current)
+            setSnapshot(moveActive)
+          }
           deviceIdRef.current = msg.device_id
           lastRegisteredDeviceIdRef.current = msg.device_id
           playbackSocketRegisteredRef.current = true

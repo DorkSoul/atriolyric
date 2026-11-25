@@ -30,6 +30,8 @@ import java.util.concurrent.Executors
  *   downloads         { items: [...] } when the list itself changes
  *   downloadProgress  { items: [{ mediaId, state, bytes, totalBytes, percent }] }
  *                     once a second while anything is being fetched
+ *   streamHeld        { mediaIds: [...] } the songs ahead in the queue held
+ *                     whole on the device (see StreamCache), when that changes
  *
  * Every method body runs inside [guard]: Capacitor turns an exception thrown
  * on its worker thread into a crash of the whole app, so none may escape.
@@ -58,12 +60,16 @@ class AtrioNativePlugin : Plugin() {
     private val onProgress: (JSONArray) -> Unit = { items ->
         notifyListeners("downloadProgress", JSObject().put("items", items))
     }
+    private val onStreamHeld: (Set<Long>) -> Unit = { ids ->
+        notifyListeners("streamHeld", JSObject().put("mediaIds", JSONArray(ids.toList())))
+    }
 
     override fun load() {
         PlayerHub.onSlot = onSlot
         PlayerHub.onCommand = onCommand
         Downloads.onChanged = onDownloads
         Downloads.onProgress = onProgress
+        StreamCache.onHeld = onStreamHeld
     }
 
     override fun handleOnDestroy() {
@@ -71,6 +77,7 @@ class AtrioNativePlugin : Plugin() {
         if (PlayerHub.onCommand === onCommand) PlayerHub.onCommand = null
         if (Downloads.onChanged === onDownloads) Downloads.onChanged = null
         if (Downloads.onProgress === onProgress) Downloads.onProgress = null
+        if (StreamCache.onHeld === onStreamHeld) StreamCache.onHeld = null
         work.shutdown()
     }
 
@@ -388,6 +395,30 @@ class AtrioNativePlugin : Plugin() {
             PlayerHub.slot(context, slot).unload()
             call.resolve()
         }
+    }
+
+    /** The songs after the playing and the next one, in play order
+     * (`items: [{ mediaId, url }]`), to hold on the device for a loss of
+     * signal (see StreamCache). Resolves with the ones already held whole. */
+    @PluginMethod
+    fun streamPrefetch(call: PluginCall) = guard(call) {
+        val list = call.getArray("items") ?: JSArray()
+        val items = ArrayList<StreamCache.Wanted>()
+        for (i in 0 until list.length()) {
+            val item = list.optJSONObject(i) ?: continue
+            val url = item.optString("url")
+            val mediaId = item.optLong("mediaId")
+            if (url.isEmpty() || mediaId <= 0) continue
+            items.add(StreamCache.Wanted(mediaId, url))
+        }
+        StreamCache.want(context, items)
+        call.resolve(JSObject().put("mediaIds", JSONArray(StreamCache.held().toList())))
+    }
+
+    /** The songs ahead in the queue held whole now, as the event above. */
+    @PluginMethod
+    fun streamHeld(call: PluginCall) = guard(call) {
+        call.resolve(JSObject().put("mediaIds", JSONArray(StreamCache.held().toList())))
     }
 
     /** Both slots as they are now (a page that just loaded asks once). */

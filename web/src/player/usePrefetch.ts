@@ -6,7 +6,8 @@ import { api } from '../api'
 import { whenPlaybackStarted } from '../playbackPriority'
 import type { StreamQuality } from '../settings'
 import type { MediaItem, PlaybackStateSnapshot } from '../types'
-import { armNativeNext } from '../native/nativeAudio'
+import { isNativeApp } from '../native/bridge'
+import { armNativeNext, holdNativeAhead } from '../native/nativeAudio'
 import type { TrackDownloadSample } from './adaptiveBitrate'
 import {
   forgetBlobSizesExcept,
@@ -284,7 +285,21 @@ function useAheadPrefetch({
     const count = prefetchAheadCount()
     if (!isActiveDevice || isVideo || !current || !next || next.kind !== 'track' || count <= 1) {
       abortAhead()
+      holdNativeAhead([])
       return
+    }
+    // In the Android app the page holds no copies (see prefetchTrackBlob):
+    // the app keeps the same tracks on the device itself. Named once the
+    // track being started plays, as below.
+    if (isNativeApp()) {
+      const items = queue.slice(index + 2, index + 1 + count)
+        .filter((item) => item.kind === 'track')
+        .map((item) => ({ mediaId: item.id, url: api.streamUrl(item.id, nextTrackBitrate) }))
+      const controller = new AbortController()
+      void whenPlaybackStarted(controller.signal).then(() => {
+        if (!controller.signal.aborted) holdNativeAhead(items)
+      })
+      return () => controller.abort()
     }
     const nextSrc = api.streamUrl(next.id, nextTrackBitrate)
     // At the quality the next track is fetched at: that is what each of

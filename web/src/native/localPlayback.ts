@@ -4,7 +4,9 @@
 // playback socket (docs/playback-protocol.md). With no connection there is no
 // server to ask, so the socket is replaced by this stand-in: it takes the
 // same messages and answers with the same snapshots, for one device (this
-// one) and for downloaded songs only. To the player it is a playback socket
+// one) and for the songs it can play with no network: downloads, and the
+// ones the app still holds from streaming (a lift or a tunnel should not stop
+// the music while those last). To the player it is a playback socket
 // like any other, so the queue, shuffle, repeat, Next and the notification
 // all work as they do online.
 //
@@ -16,6 +18,7 @@
 import type { MediaItem, PlaybackStateSnapshot } from '../types'
 import { nativeCall } from './bridge'
 import { downloadOf, downloadsReady, downloadsSnapshot, offlineMediaItems } from './downloadStore'
+import { nativeHeldTrackIds } from './nativeAudio'
 
 /** This device's id while it is its own server. Not a row id of any server. */
 export const LOCAL_DEVICE_ID = 2_000_000_001
@@ -152,9 +155,13 @@ export function clearHandback(): void {
   save()
 }
 
+/** Whether a track can play with no connection: a downloaded song, or one
+ * the app holds from streaming it (the playing and next tracks, and the ones
+ * held ahead of the queue), so a short loss of signal does not stop the music. */
 function isPlayable(id: number): boolean {
   const download = downloadOf(id)
-  return download?.state === 'completed' && download.kind === 'track'
+  if (download?.state === 'completed') return download.kind === 'track'
+  return nativeHeldTrackIds().has(id)
 }
 
 function shuffle<T>(items: T[]): T[] {

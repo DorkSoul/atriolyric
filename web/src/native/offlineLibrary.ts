@@ -11,7 +11,7 @@
 import type { Album, Artist, MediaItem } from '../types'
 import { isNativeApp } from './bridge'
 import { shouldWaitForWifi } from './downloadSettings'
-import { isOffline } from './offline'
+import { checkOffline, isOffline, onOfflineChange } from './offline'
 import { forgetAnswer, rememberAnswer, rememberedAnswer, rememberItems } from './offlineCache'
 
 const ALBUMS_URL = '/api/library/albums?sort=alphabetical&direction=asc&full=1'
@@ -178,7 +178,12 @@ export function scheduleOfflinePrime(ask: Ask, askUnkept: Ask): void {
   if (Date.now() - lastPrimedAt() < PRIME_EVERY_MS) return
   primeTimer = window.setTimeout(() => {
     primeTimer = undefined
-    if (isOffline() || priming) return
+    if (priming) return
+    // No connection when it is due: it starts once the server is back.
+    if (isOffline()) {
+      retryWhenOnline(ask, askUnkept)
+      return
+    }
     priming = true
     prime(ask, askUnkept)
       .then(() => {
@@ -190,8 +195,14 @@ export function scheduleOfflinePrime(ask: Ask, askUnkept: Ask): void {
         }
       })
       .catch(() => {
-        // The connection went, the session ended, or the phone is on mobile
-        // data with Wi-Fi only chosen: the next start carries on.
+        // The session ended, or the phone is on mobile data with Wi-Fi only
+        // chosen: the next start carries on. The connection went (a lift, a
+        // tunnel): it carries on once the server is back, as well.
+        // (The check that a request without an answer started may still be
+        // under way: its outcome decides.)
+        void checkOffline().then((offline) => {
+          if (offline) retryWhenOnline(ask, askUnkept)
+        })
       })
       .finally(() => {
         priming = false
@@ -199,6 +210,20 @@ export function scheduleOfflinePrime(ask: Ask, askUnkept: Ask): void {
         forgetKeptCopies()
       })
   }, PRIME_DELAY_MS)
+}
+
+/** Starts the fetch again (after the usual delay) once the server answers. */
+function retryWhenOnline(ask: Ask, askUnkept: Ask): void {
+  const stop = onOfflineChange(() => {
+    if (isOffline()) return
+    stop()
+    scheduleOfflinePrime(ask, askUnkept)
+  })
+  // Back already, before the listener was in place.
+  if (!isOffline()) {
+    stop()
+    scheduleOfflinePrime(ask, askUnkept)
+  }
 }
 
 /** Another account: its copy is gone (offlineCache), so fetch again. */

@@ -144,6 +144,8 @@ export function native<T>(page: Page, method: string, options: Record<string, un
 
 export interface Slot {
   slot: string
+  /** Which load of the page this state is for: a new one is a reload. */
+  loadId: number
   mediaId: number
   playbackState: string
   playing: boolean

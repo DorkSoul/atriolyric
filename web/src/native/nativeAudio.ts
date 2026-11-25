@@ -94,6 +94,13 @@ class BackedAudio {
     this.install()
   }
 
+  /** The library track this music element holds, 0 when none (or its
+   * load failed). The native player has it whole, or is loading it. */
+  heldTrackId(): number {
+    if ((this.slot !== 'a' && this.slot !== 'b') || !this.src || this.mediaError) return 0
+    return mediaIdOf(this.src)
+  }
+
   private fire(type: string) {
     this.element.dispatchEvent(new Event(type))
   }
@@ -387,4 +394,45 @@ export function setNativeGain(element: HTMLMediaElement, gainDb: number): boolea
 export function setNativeEqualiser(gains: number[], limiter: boolean): void {
   if (!isNativeApp()) return
   void nativeCall('playerEqualiser', { gains, limiter }).catch(() => {})
+}
+
+// The songs after the playing and the next one that the app holds on the
+// device (see StreamCache.kt), so a short loss of signal does not stop the
+// music. The playing and next ones are in the two music players already.
+let heldAhead = new Set<number>()
+let heldListening = false
+let lastAhead = ''
+
+function noteHeldAhead(ids: unknown) {
+  heldAhead = new Set(Array.isArray(ids) ? ids.map(Number).filter((id) => id > 0) : [])
+}
+
+/** Asks the app to hold these tracks (after the next one, in play order) on
+ * the device. Does nothing outside the app. */
+export function holdNativeAhead(items: { mediaId: number; url: string }[]): void {
+  if (!isNativeApp()) return
+  if (!heldListening) {
+    heldListening = true
+    onNative<{ mediaIds?: unknown }>('streamHeld', ({ mediaIds }) => noteHeldAhead(mediaIds))
+  }
+  const list = items.map((item) => ({ mediaId: item.mediaId, url: absolute(item.url) }))
+  const key = JSON.stringify(list)
+  if (key === lastAhead) return
+  lastAhead = key
+  void nativeCall<{ mediaIds?: unknown }>('streamPrefetch', { items: list })
+    .then(({ mediaIds }) => noteHeldAhead(mediaIds))
+    .catch(() => {
+      lastAhead = ''
+    })
+}
+
+/** The library tracks the app can play with no network: the ones in its two
+ * music players and the ones held ahead of the queue. Downloads not counted. */
+export function nativeHeldTrackIds(): Set<number> {
+  const ids = new Set(heldAhead)
+  for (const audio of backed.values()) {
+    const id = audio.heldTrackId()
+    if (id > 0) ids.add(id)
+  }
+  return ids
 }

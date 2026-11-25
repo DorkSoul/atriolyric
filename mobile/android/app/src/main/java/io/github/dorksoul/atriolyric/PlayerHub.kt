@@ -18,6 +18,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSourceBitmapLoader
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.CacheBitmapLoader
@@ -166,10 +167,14 @@ object PlayerHub {
          * and a video's sound play as they are, as in the web player. */
         val equaliser: Equaliser? = if (name == "a" || name == "b") Equaliser() else null
         val player: ExoPlayer = (
-            if (equaliser != null) ExoPlayer.Builder(context, EqualisedRenderersFactory(context, EqualiserProcessor(equaliser)))
-            else ExoPlayer.Builder(context)
+            if (equaliser != null) {
+                ExoPlayer.Builder(context, EqualisedRenderersFactory(context, EqualiserProcessor(equaliser)))
+                    .setLoadControl(wholeTrackLoadControl())
+            } else {
+                ExoPlayer.Builder(context)
+            }
             )
-            .setMediaSourceFactory(DefaultMediaSourceFactory(context).setDataSourceFactory(Net.playback(context)))
+            .setMediaSourceFactory(DefaultMediaSourceFactory(context).setDataSourceFactory(Net.playback(context, music = equaliser != null)))
             .setAudioAttributes(
                 AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(),
                 true,
@@ -324,6 +329,26 @@ object PlayerHub {
     }
 
     private const val IDLE_RELEASE_MS = 10 * 60 * 1000L
+
+    /** The most of one track a music player holds in memory. */
+    private const val WHOLE_TRACK_BYTES = 48 * 1024 * 1024
+    private const val WHOLE_TRACK_MS = 30 * 60 * 1000
+
+    /** The music players load their whole track (up to [WHOLE_TRACK_BYTES])
+     * rather than the default 50 seconds ahead, so the playing track and the
+     * standby's next one both play to the end through a loss of signal, as
+     * the browser's in-memory copies do. The tracks after those are held on
+     * disk ([StreamCache]). Radio, a live stream, keeps the default. */
+    private fun wholeTrackLoadControl(): DefaultLoadControl = DefaultLoadControl.Builder()
+        .setBufferDurationsMs(
+            WHOLE_TRACK_MS,
+            WHOLE_TRACK_MS,
+            DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
+            DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS,
+        )
+        .setTargetBufferBytes(WHOLE_TRACK_BYTES)
+        .setPrioritizeTimeOverSizeThresholds(false)
+        .build()
 
     /** What the session sees: the slot's player, with Next and Previous always
      * offered and handed to the web player, which owns the queue. */
