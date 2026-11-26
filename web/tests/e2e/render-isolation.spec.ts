@@ -172,9 +172,10 @@ test.describe('volume changes', () => {
       await expect(volume).toHaveValue(step)
       await settle(page)
     }
+    // Halfway along the slider is 25 dB down (src/player/volumeCurve.ts).
     await expect
       .poll(() => page.locator('[data-player-element="main"]').evaluate((element) => (element as HTMLMediaElement).volume))
-      .toBeCloseTo(0.5, 2)
+      .toBeCloseTo(10 ** (-25 / 20), 3)
 
     const after = await commits(page)
     expect(after.player - before.player, 'player commits').toBeGreaterThanOrEqual(5)
