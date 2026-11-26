@@ -52,6 +52,7 @@ import { usePrefetchCache, useStandbyPrefetch, type UpcomingTrackDownload } from
 import { useMediaSessionSync, useMediaSessionKeepAlive } from './player/useMediaSession'
 import { useOutputClaim } from './player/useOutputClaim'
 import { useAccountSettings } from './player/useAccountSettings'
+import { volumeGain } from './player/volumeCurve'
 import { isNativeApp } from './native/bridge'
 import {
   backWithNativePlayer,
@@ -351,7 +352,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const trackBlobsRef = useRef(new Map<string, string>())
   const keepAliveAudioRef = useRef<HTMLAudioElement>(null)
   const prefetchRef = useRef<{ src: string; controller: AbortController } | null>(null)
-  const volumeRef = useRef(volume)
+  // The gain the slider position stands for (see volumeCurve.ts), not the
+  // position itself: every element's volume is set from this.
+  const volumeRef = useRef(volumeGain(volume))
   const [connected, setConnected] = useState(false)
   const [reconnecting, setReconnecting] = useState(false)
   // The server closed this page's socket because another tab of the same
@@ -794,12 +797,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [effectiveIsPlaying])
 
   useEffect(() => {
-    volumeRef.current = volume
+    volumeRef.current = volumeGain(volume)
     if (!activeAudioRef.current) activeAudioRef.current = audioRef.current
     if (audioRef.current) applyElementVolume(audioRef.current)
     if (preloadAudioRef.current) applyElementVolume(preloadAudioRef.current)
     if (videoRef.current) applyElementVolume(videoRef.current)
-    if (radioAudioRef.current) radioAudioRef.current.volume = volume
+    if (radioAudioRef.current) radioAudioRef.current.volume = volumeRef.current
   }, [applyElementVolume, volume, audioSettings])
 
   // Keep the reload marker in sync with the canonical server state. It is
