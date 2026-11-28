@@ -31,7 +31,7 @@ import { MoreSheet } from './components/MoreSheet'
 import { useIsDesktop } from './useIsDesktop'
 import { formatLastScan } from './libraryInfoFormat'
 import { menuTriggerProps } from './menuTrigger'
-import { type NavState, type Tab, hashToNav, navToHash } from './nav'
+import { type NavState, type Tab, type WantNav, hashToNav, navToHash } from './nav'
 import { CLOSE_NOW_PLAYING_EVENT, NOW_PLAYING_HASH, PlayerProvider, usePlayer } from './PlayerContext'
 import { NOW_PLAYING_PAGE_HOST_ID, useNowPlayingAsPage } from './components/nowPlayingLazy'
 import { RenderProbe } from './RenderProbe'
@@ -491,6 +491,16 @@ function AppInner() {
     navigate(parent, { replaceEntry: true })
   }
 
+  /** The Want list artist page the current entry was opened from, if it was:
+   * a catalog album's back link returns there (a featured artist's page, or
+   * the wanted-artist address) rather than to the album's own credited artist. */
+  function wantArtistBefore(): WantNav | undefined {
+    const prev = pageEntryState().prev
+    if (prev == null) return undefined
+    const want = hashToNav(prev).want
+    return want?.page === 'artist' || want?.page === 'catalog' ? want : undefined
+  }
+
   /** A playlist's back link is named after where it was opened from (Home,
    * Now Playing's "Back"), and that page is the entry before it; otherwise,
    * and when there is no such entry (a link, a new tab), up to Playlists. */
@@ -921,6 +931,7 @@ function AppInner() {
           openArtist(artist)
         }}
         onOpenAlbum={openAlbum}
+        cameFrom={t === nav.tab ? wantArtistBefore() : undefined}
       />
     ) : t === 'files' ? (
       <FilesView

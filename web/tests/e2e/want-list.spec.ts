@@ -118,6 +118,29 @@ test('a catalog album lists owned songs and wants missing ones', async ({ page }
   await expect(page.getByRole('button', { name: 'Wanted' })).toBeVisible()
 })
 
+test("a catalog album's back link returns to the artist page it was opened from", async ({ page }) => {
+  await installApiMock(page)
+  await installWantListMock(page)
+  // Another artist's page listing the album (a featured artist): Back returns
+  // there, not to the album's credited artist.
+  await page.goto('/#/want-list/catalog/mb-guest/Guest%20Artist')
+  await page.getByRole('region', { name: 'Albums' }).locator('.catalog-tile').filter({ hasText: 'Ziggy Stardust' }).click()
+  await expect(page).toHaveURL(/#\/want-list\/album\/rg-ziggy/)
+  await expect(page.getByRole('list', { name: 'Tracklist' })).toBeVisible()
+  const length = await page.evaluate(() => history.length)
+  await page.getByRole('banner').getByRole('button', { name: 'Guest Artist' }).click()
+  await expect(page).toHaveURL(/#\/want-list\/catalog\/mb-guest\/Guest%20Artist$/)
+  // The browser's Back, not a second copy of the artist page.
+  expect(await page.evaluate(() => history.length)).toBe(length)
+
+  // The wanted-artist address of the same discography.
+  await page.goto('/#/want-list/artist/David%20Bowie/mb-bowie')
+  await page.getByRole('region', { name: 'Albums' }).locator('.catalog-tile').filter({ hasText: 'Ziggy Stardust' }).click()
+  await expect(page).toHaveURL(/#\/want-list\/album\/rg-ziggy/)
+  await page.getByRole('banner').getByRole('button', { name: 'David Bowie' }).click()
+  await expect(page).toHaveURL(/#\/want-list\/artist\/David%20Bowie\/mb-bowie$/)
+})
+
 test('an owned artist from search opens their library page with missing shown', async ({ page }) => {
   await openWantList(page)
   await page.getByRole('searchbox', { name: /Search MusicBrainz/ }).fill('queen')

@@ -42,6 +42,9 @@ interface Props {
    * releases on (an owned artist picked from the want-list search). */
   onOpenArtist: (name: string, options?: { showMissing?: boolean }) => void
   onOpenAlbum: (artist: string | null, album: string) => void
+  /** The Want list artist page the current page was opened from (App reads
+   * it from the history entry), so a catalog album's back link returns there. */
+  cameFrom?: WantView
 }
 
 /** While the server re-checks an artist in the background, poll until it is
@@ -146,7 +149,7 @@ function useWantRefresh(load: () => void) {
   useEffect(() => onWantListChange(load), [load])
 }
 
-export function WantListView({ view, onNavigate, onOpenArtist, onOpenAlbum }: Props) {
+export function WantListView({ view, onNavigate, onOpenArtist, onOpenAlbum, cameFrom }: Props) {
   if (view.page === 'artist' || view.page === 'catalog') {
     // An artist with a MusicBrainz id gets one page: the whole discography
     // with the want toggles, and the songs wanted one by one under it.
@@ -164,7 +167,7 @@ export function WantListView({ view, onNavigate, onOpenArtist, onOpenAlbum }: Pr
     )
   }
   if (view.page === 'album') {
-    return <CatalogAlbumPage view={view} onNavigate={onNavigate} onOpenAlbum={onOpenAlbum} />
+    return <CatalogAlbumPage view={view} onNavigate={onNavigate} onOpenAlbum={onOpenAlbum} cameFrom={cameFrom} />
   }
   return <WantListHome view={view} onNavigate={onNavigate} onOpenArtist={onOpenArtist} onOpenAlbum={onOpenAlbum} />
 }
@@ -789,10 +792,20 @@ function progressLine(entry: WantEntry) {
   return parts.filter(Boolean).join(' · ')
 }
 
-function BackOnly({ onBack, message, loading = false }: { onBack: () => void; message: string; loading?: boolean }) {
+function BackOnly({
+  onBack,
+  message,
+  loading = false,
+  label = 'Want list',
+}: {
+  onBack: () => void
+  message: string
+  loading?: boolean
+  label?: string
+}) {
   return (
     <div className="want-list">
-      <TopBarBack label="Want list" onBack={onBack} />
+      <TopBarBack label={label} onBack={onBack} />
       {loading ? (
         <div className="want-loading" role="status">
           <span className="want-spinner" aria-hidden /> {message}
@@ -955,7 +968,8 @@ function CatalogAlbumPage({
   view,
   onNavigate,
   onOpenAlbum,
-}: Pick<Props, 'onNavigate' | 'onOpenAlbum'> & { view: { page: 'album'; mbid: string; artist?: string } }) {
+  cameFrom,
+}: Pick<Props, 'onNavigate' | 'onOpenAlbum' | 'cameFrom'> & { view: { page: 'album'; mbid: string; artist?: string } }) {
   // A first look may answer with a placeholder (`pending`, no title or
   // tracks yet): asked again until MusicBrainz has answered.
   const state = usePendingAsync(() => wantApi.catalogAlbum(view.mbid, view.artist), [view.mbid, view.artist], {
@@ -972,10 +986,16 @@ function CatalogAlbumPage({
         : null
   useWantRefresh(state.reload)
 
-  const home = () => onNavigate({ page: 'home' }, { up: true })
-  const back = () => (album?.artist_mbid ? onNavigate({ page: 'catalog', mbid: album.artist_mbid, name: album.artist }, { up: true }) : home())
-  if (error) return <BackOnly onBack={home} message={error} />
-  if (!album) return <BackOnly onBack={home} message="Loading the tracklist from MusicBrainz…" loading />
+  // Back returns to the artist page this album was opened from (a featured
+  // artist's, or the wanted-artist address of the same discography); opened
+  // some other way, up to the album's credited artist, or the Want list.
+  const parent: WantView | null =
+    cameFrom ?? (album?.artist_mbid ? { page: 'catalog', mbid: album.artist_mbid, name: album.artist } : null)
+  const back = () => onNavigate(parent ?? { page: 'home' }, { up: true })
+  const cameFromName = cameFrom?.page === 'artist' || cameFrom?.page === 'catalog' ? cameFrom.name : undefined
+  const backLabel = cameFrom ? cameFromName || 'Artist' : parent ? album!.artist : 'Want list'
+  if (error) return <BackOnly onBack={back} label={backLabel} message={error} />
+  if (!album) return <BackOnly onBack={back} label={backLabel} message="Loading the tracklist from MusicBrainz…" loading />
   const albumInput: WantInput = {
     kind: 'album',
     artist: album.artist,
@@ -987,7 +1007,7 @@ function CatalogAlbumPage({
 
   return (
     <div className="want-list catalog-page">
-      <BrowseDetailHeader backLabel={album.artist_mbid ? album.artist : 'Want list'} onBack={back} title={`${album.title} · ${album.artist}`} />
+      <BrowseDetailHeader backLabel={backLabel} onBack={back} title={`${album.title} · ${album.artist}`} />
       <div className="collection-detail-info catalog-album-info">
         <CatalogCover mbid={album.mbid} className="collection-detail-art" />
         <div className="collection-detail-copy">
