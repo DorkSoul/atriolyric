@@ -119,16 +119,49 @@ function RecheckBar({ active }: { active: boolean }) {
   )
 }
 
+const SHOW_UNWANTED_KEY = 'atriolyric.wantShowUnwanted'
+
+/** "Show releases not wanted" on an artist's page: a per-device choice, on
+ * by default (the whole discography). */
+function useShowUnwanted(): [boolean, (next: boolean) => void] {
+  const [value, setValue] = useState(() => {
+    try {
+      return localStorage.getItem(SHOW_UNWANTED_KEY) !== '0'
+    } catch {
+      return true
+    }
+  })
+  const set = (next: boolean) => {
+    setValue(next)
+    try {
+      localStorage.setItem(SHOW_UNWANTED_KEY, next ? '1' : '0')
+    } catch {
+      // Not remembered across reloads, but still applies now.
+    }
+  }
+  return [value, set]
+}
+
 function useWantRefresh(load: () => void) {
   useEffect(() => onWantListChange(load), [load])
 }
 
 export function WantListView({ view, onNavigate, onOpenArtist, onOpenAlbum }: Props) {
-  if (view.page === 'artist') {
-    return <WantedArtistPage view={view} onNavigate={onNavigate} onOpenArtist={onOpenArtist} onOpenAlbum={onOpenAlbum} />
-  }
-  if (view.page === 'catalog') {
-    return <CatalogArtistPage view={view} onNavigate={onNavigate} onOpenArtist={onOpenArtist} onOpenAlbum={onOpenAlbum} />
+  if (view.page === 'artist' || view.page === 'catalog') {
+    // An artist with a MusicBrainz id gets one page: the whole discography
+    // with the want toggles, and the songs wanted one by one under it.
+    const mbid = view.mbid
+    if (!mbid && view.page === 'artist') {
+      return <WantedArtistPage view={view} onNavigate={onNavigate} onOpenArtist={onOpenArtist} onOpenAlbum={onOpenAlbum} />
+    }
+    return (
+      <CatalogArtistPage
+        view={{ page: 'catalog', mbid: mbid!, name: view.name }}
+        onNavigate={onNavigate}
+        onOpenArtist={onOpenArtist}
+        onOpenAlbum={onOpenAlbum}
+      />
+    )
   }
   if (view.page === 'album') {
     return <CatalogAlbumPage view={view} onNavigate={onNavigate} onOpenAlbum={onOpenAlbum} />
@@ -483,7 +516,6 @@ function WantedArtistPage({
   onOpenArtist,
   onOpenAlbum,
 }: Omit<Props, 'view'> & { view: { page: 'artist'; name: string; mbid?: string } }) {
-  const { playQueueIds } = usePlayerActions()
   // Stored data shows at once; a part still being fetched (`pending`) is
   // asked for again until it is in.
   const state = usePendingAsync(() => wantApi.artist(view.name, view.mbid), [view.name, view.mbid], {
@@ -496,6 +528,12 @@ function WantedArtistPage({
   const rechecking = useBackgroundRecheck(detail?.refreshing, detail?.artist_mbid, load)
   const matching = useMatchingPoll(detail?.matching === true, false, load)
   const checking = rechecking || matching
+  // Opened by name, but the entries know the artist's MusicBrainz id: show
+  // the discography page instead.
+  const foundMbid = detail?.artist_mbid
+  useEffect(() => {
+    if (foundMbid) onNavigate({ page: 'artist', name: view.name, mbid: foundMbid }, { replace: true })
+  }, [foundMbid, view.name, onNavigate])
 
   const back = () => onNavigate({ page: 'home' }, { up: true })
   if (failed) return <BackOnly onBack={back} message="Couldn't load this artist's wants." />
@@ -521,7 +559,6 @@ function WantedArtistPage({
     })),
     ...albumEntries.filter((e) => e.release_group_mbid && !missingIds.has(e.release_group_mbid)).map(entryTile),
   ]
-  const albumsWithoutId = albumEntries.filter((e) => !e.release_group_mbid)
   const tracks = detail.tracks.filter((e) => !e.excluded)
   const openGroup = (group: CatalogReleaseGroup) => {
     const entry = entryByGroup.get(group.mbid)
@@ -556,11 +593,6 @@ function WantedArtistPage({
                 />
               )
             )}
-            {mbid && (
-              <button type="button" className="btn btn-ghost" onClick={() => onNavigate({ page: 'catalog', mbid, name: detail.artist })}>
-                Full discography
-              </button>
-            )}
             {detail.in_library && (
               <button type="button" className="btn btn-ghost" onClick={() => onOpenArtist(detail.artist, { showMissing: true })}>
                 Open in library
@@ -589,9 +621,31 @@ function WantedArtistPage({
         </section>
       ))}
 
+      <WantedExtras detail={detail} hasTiles={tiles.length > 0} onOpenAlbum={onOpenAlbum} />
+    </div>
+  )
+}
+
+/** What an artist's tiles cannot show: albums wanted without a MusicBrainz
+ * id, and the songs wanted one by one. */
+function WantedExtras({
+  detail,
+  hasTiles,
+  onOpenAlbum,
+}: {
+  detail: WantedArtistDetail
+  hasTiles: boolean
+  onOpenAlbum: Props['onOpenAlbum']
+}) {
+  const { playQueueIds } = usePlayerActions()
+  const remove = (entry: WantEntry) => wantApi.remove(entry.id)
+  const albumsWithoutId = detail.albums.filter((e) => !e.excluded && !e.release_group_mbid)
+  const tracks = detail.tracks.filter((e) => !e.excluded)
+  return (
+    <>
       {albumsWithoutId.length > 0 && (
         <section className="artist-album-section" aria-label="Other albums">
-          <h3 className="artist-section-heading">{tiles.length > 0 ? 'Other albums' : 'Albums'}</h3>
+          <h3 className="artist-section-heading">{hasTiles ? 'Other albums' : 'Albums'}</h3>
           <ul className="want-results">
             {albumsWithoutId.map((entry) => (
               <li key={entry.id} className={`want-result${entry.owned ? '' : ' is-missing'}`}>
@@ -642,7 +696,7 @@ function WantedArtistPage({
           </ul>
         </section>
       )}
-    </div>
+    </>
   )
 }
 
@@ -784,12 +838,45 @@ function CatalogArtistPage({
   // is for a re-check of data that was complete.
   const rechecking = useBackgroundRecheck(catalog?.refreshing && !catalog.pending, catalog?.artist_mbid, reload)
   const checking = rechecking || state.fetchingMore
+  // The artist's want-list entries, for the songs wanted one by one (and
+  // albums wanted that the discography does not list).
+  const wantName = view.name ?? catalog?.artist_name ?? undefined
+  const wantedState = usePendingAsync(() => wantApi.artist(wantName ?? '', view.mbid), [wantName, view.mbid], {
+    enabled: Boolean(wantName),
+    staleMs: KEPT_TAB_STALE_MS,
+  })
+  useWantRefresh(wantedState.reload)
+  const wanted = wantedState.data ?? null
+  const [showUnwanted, setShowUnwanted] = useShowUnwanted()
 
   const back = () => onNavigate({ page: 'home' }, { up: true })
   if (error) return <BackOnly onBack={back} message={error} />
   if (!catalog) return <BackOnly onBack={back} message="Loading the discography from MusicBrainz…" loading />
   const name = catalog.artist_name ?? view.name ?? 'Artist'
   const artistEntryInput: WantInput = { kind: 'artist', artist: name, artist_mbid: catalog.artist_mbid }
+  const listed = new Set(catalog.release_groups.map((g) => g.mbid))
+  const wantedAlbums = (wanted?.albums ?? []).filter((e) => !e.excluded)
+  const entryByGroup = new Map(wantedAlbums.flatMap((e) => (e.release_group_mbid ? [[e.release_group_mbid, e] as const] : [])))
+  const allTiles = [
+    ...catalog.release_groups,
+    ...wantedAlbums.filter((e) => e.release_group_mbid && !listed.has(e.release_group_mbid)).map(entryTile),
+  ]
+  const notWanted = allTiles.filter((g) => !g.wanted).length
+  const tiles = showUnwanted ? allTiles : allTiles.filter((g) => g.wanted)
+  const wantedCount = allTiles.length - notWanted
+  const subtitle = [
+    allTiles.length ? `${allTiles.length} release${allTiles.length === 1 ? '' : 's'}` : null,
+    wantedCount ? `${wantedCount} wanted` : null,
+    catalog.artist_wanted ? 'new releases wanted too' : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+  const openGroup = (group: CatalogReleaseGroup) => {
+    const entry = entryByGroup.get(group.mbid)
+    if (group.owned_album?.album) onOpenAlbum(group.owned_album.artist, group.owned_album.album)
+    else if (entry?.owned && entry.title) onOpenAlbum(entry.artist, entry.title)
+    else onNavigate({ page: 'album', mbid: group.mbid, artist: name })
+  }
 
   return (
     <div className="want-list catalog-page">
@@ -798,7 +885,7 @@ function CatalogArtistPage({
         name={name}
         mbid={catalog.artist_mbid}
         cover={catalog.cover_release_group_mbid}
-        subtitle={catalog.release_groups.length ? `${catalog.release_groups.length} release${catalog.release_groups.length === 1 ? '' : 's'} on MusicBrainz` : ''}
+        subtitle={subtitle}
         onBack={back}
         actions={
           <>
@@ -827,12 +914,19 @@ function CatalogArtistPage({
           Fetching tracklists in the background ({catalog.tracklists_known}/{catalog.tracklists_total})…
         </p>
       )}
-      {catalog.release_groups.length === 0 && state.fetchingMore ? (
+      {notWanted > 0 && wantedCount > 0 && (
+        <Switch className="want-toggle want-unwanted-toggle" checked={showUnwanted} onChange={setShowUnwanted}>
+          Show releases not wanted
+        </Switch>
+      )}
+      {allTiles.length === 0 && state.fetchingMore ? (
         <FetchingMore label="Loading the discography from MusicBrainz…" />
-      ) : catalog.release_groups.length === 0 ? (
+      ) : allTiles.length === 0 ? (
         <p className="empty">MusicBrainz lists no releases for this artist.</p>
+      ) : tiles.length === 0 ? (
+        <p className="empty">Nothing by this artist is wanted.</p>
       ) : (
-        groupCatalogSections(catalog.release_groups).map((section) => (
+        groupCatalogSections(tiles).map((section) => (
           <section key={section.heading} className="artist-album-section" aria-label={section.heading}>
             <h3 className="artist-section-heading">{section.heading}</h3>
             <div className="browse-grid">
@@ -843,17 +937,14 @@ function CatalogArtistPage({
                   artist={name}
                   artistMbid={catalog.artist_mbid}
                   artistWanted={catalog.artist_wanted}
-                  onOpen={() =>
-                    group.owned_album?.album
-                      ? onOpenAlbum(group.owned_album.artist, group.owned_album.album)
-                      : onNavigate({ page: 'album', mbid: group.mbid, artist: name })
-                  }
+                  onOpen={() => openGroup(group)}
                 />
               ))}
             </div>
           </section>
         ))
       )}
+      {wanted && <WantedExtras detail={wanted} hasTiles={allTiles.length > 0} onOpenAlbum={onOpenAlbum} />}
     </div>
   )
 }

@@ -162,6 +162,11 @@
   font-weight: 500;
 }
 
+/* Above an artist's release sections. */
+.want-unwanted-toggle {
+  margin: var(--space-2) 0 var(--space-1);
+}
+
 .want-results {
   list-style: none;
   margin: 0;

@@ -96,6 +96,12 @@ test('a catalog artist page greys missing releases and wants the whole artist', 
   const single = page.getByRole('region', { name: 'Singles' }).locator('.catalog-tile')
   await single.getByTitle('Remove from want list').click()
   await expect(single.getByTitle('Add to want list')).toBeVisible()
+
+  // The switch hides what is not wanted: owned and left-out releases.
+  await page.getByRole('switch', { name: 'Show releases not wanted' }).click()
+  await expect(albums.locator('.catalog-tile')).toHaveCount(1)
+  await expect(albums).toContainText('Ziggy Stardust')
+  await expect(page.getByRole('region', { name: 'Singles' })).toHaveCount(0)
 })
 
 test('a catalog album lists owned songs and wants missing ones', async ({ page }) => {
