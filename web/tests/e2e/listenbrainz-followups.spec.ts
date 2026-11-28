@@ -120,7 +120,7 @@ test('a wanted artist page credits its Commons picture', async ({ page }) => {
     media_item_id: null, owned_count: null, total_count: null, owned: false, created_at: '2026-10-29T00:00:00Z',
   })
   await page.goto('/#/want-list/artist/David%20Bowie/mb-bowie')
-  await expect(page.locator('.want-artist-hero .info-image-credit')).toHaveText('Photo: Pat Lens · CC0')
+  await expect(page.locator('.want-artist-header .info-image-credit')).toHaveText('Photo: Pat Lens · CC0')
 })
 
 test('Admin offers to remove artwork saved before sources were recorded', async ({ page }) => {

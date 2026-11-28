@@ -9,6 +9,7 @@ from app.artist_credits import rebuild_all_credits
 from app.external_cache import store
 from app.models import (
     Album,
+    CustomArt,
     ExternalCache,
     LibraryRoot,
     MediaItem,
@@ -407,3 +408,36 @@ def test_a_punctuation_title_only_matches_the_same_title(client, db_session):
     assert db_session.get(MediaItem, owned["media_item_id"]).title == "+"
     assert client.post("/api/want-list/clear-owned").json() == {"removed": 1}
     assert [e.title for e in db_session.query(WantListItem)] == ["÷"]
+
+
+def _art(db_session, entity_type: str, key: str) -> None:
+    db_session.add(CustomArt(entity_type=entity_type, entity_key=key, path=f"{key}.jpg", thumb_path=f"{key}-t.jpg"))
+    db_session.commit()
+
+
+def test_an_artist_with_no_photo_shows_one_of_their_covers(client, db_session):
+    # Not in the library, so no track's art: the newest album with a stored
+    # cover stands in for the missing photo (singles only after albums).
+    store(db_session, "musicbrainz", "artist-release-groups", ARTIST, GROUPS)
+    _art(db_session, "catalog_album", GROUPS[0]["mbid"])
+    _art(db_session, "catalog_album", GROUPS[2]["mbid"])
+    with patch("app.want_list.prefetch_tracklists_in_background"):
+        client.post("/api/want-list", json={"kind": "artist", "artist": "The Band", "artist_mbid": ARTIST})
+    summary = client.get("/api/want-list/artists").json()[0]
+    assert summary["representative_media_item_id"] is None
+    assert summary["cover_release_group_mbid"] == GROUPS[0]["mbid"]
+
+    # A wanted album's own cover comes first.
+    client.post(
+        "/api/want-list",
+        json={"kind": "album", "artist": "The Band", "title": "Hit Song", "artist_mbid": ARTIST, "release_group_mbid": GROUPS[2]["mbid"]},
+    )
+    assert client.get("/api/want-list/artists").json()[0]["cover_release_group_mbid"] == GROUPS[2]["mbid"]
+    detail = client.get("/api/want-list/artist", params={"name": "The Band", "mbid": ARTIST}).json()
+    assert detail["cover_release_group_mbid"] == GROUPS[2]["mbid"]
+
+    # Once the artist has a photo, no stand-in.
+    _art(db_session, "catalog_artist", ARTIST)
+    assert client.get("/api/want-list/artists").json()[0]["cover_release_group_mbid"] is None
+    catalog = client.get("/api/catalog/artist", params={"mbid": ARTIST}).json()
+    assert catalog["cover_release_group_mbid"] is None

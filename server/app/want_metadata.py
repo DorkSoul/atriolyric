@@ -161,6 +161,54 @@ def stored_catalog_art(db: Session, kind: str, mbid: str) -> tuple[CustomArt | N
     return row, row is None and _recent_miss(db, kind, mbid)
 
 
+def artist_cover_fallbacks(
+    db: Session, wanted: dict[str, tuple[str | None, list[str]]]
+) -> dict[str, str | None]:
+    """For each artist with no stored photo, a release group whose cover is
+    stored, to show in the photo's place: {key: release group MBID or None}.
+
+    `wanted` maps a key to (artist MBID, release groups to try first - the
+    wanted albums and songs). After those come the artist's saved release
+    groups, albums first, newest first. Stored data only, no provider calls."""
+    artist_mbids = {mbid for mbid, _groups in wanted.values() if mbid}
+    with_photo = (
+        set(
+            db.scalars(
+                select(CustomArt.entity_key).where(
+                    CustomArt.entity_type == ART_TYPES["artist"], CustomArt.entity_key.in_(artist_mbids)
+                )
+            )
+        )
+        if artist_mbids
+        else set()
+    )
+    candidates: dict[str, list[str]] = {}
+    for key, (artist_mbid, groups) in wanted.items():
+        if artist_mbid and artist_mbid in with_photo:
+            candidates[key] = []
+            continue
+        tried = [mbid for mbid in groups if mbid]
+        if artist_mbid:
+            saved = release_groups(db, artist_mbid, allow_fetch=False) or []
+            saved = sorted(saved, key=lambda g: g.get("first_release_date") or "", reverse=True)
+            saved.sort(key=lambda g: g.get("section") != "Album")
+            tried += [g["mbid"] for g in saved if g.get("mbid")]
+        candidates[key] = tried
+    every = {mbid for tried in candidates.values() for mbid in tried}
+    covered = (
+        set(
+            db.scalars(
+                select(CustomArt.entity_key).where(
+                    CustomArt.entity_type == ART_TYPES["album"], CustomArt.entity_key.in_(every)
+                )
+            )
+        )
+        if every
+        else set()
+    )
+    return {key: next((mbid for mbid in tried if mbid in covered), None) for key, tried in candidates.items()}
+
+
 def queue_catalog_art(kind: str, mbid: str, *, user_id: int | None = None) -> bool:
     """Fetch a catalog cover/picture on the background provider queue (one
     job per (kind, mbid) however many tiles ask). Names come from

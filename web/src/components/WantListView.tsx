@@ -9,6 +9,7 @@ import {
   wantApi,
   type CatalogAlbum,
   type CatalogArtist,
+  type CatalogReleaseGroup,
   type WantedArtistDetail,
   type WantedArtistSummary,
   type WantEntry,
@@ -25,7 +26,7 @@ import { useCatalogArtCredit } from '../artCredit'
 import { FetchingMore } from './ErrorState'
 import { PENDING_REASK_MS, usePendingAsync } from '../usePendingAsync'
 import { KEPT_TAB_STALE_MS, useAsync } from '../useAsync'
-import { errorMessage, groupCatalogSections, statusLabel, year } from '../catalogHelpers'
+import { errorMessage, groupCatalogSections, year } from '../catalogHelpers'
 import './wantList.css'
 import { MicIcon } from './Icons'
 import { Switch } from './Switch'
@@ -278,11 +279,12 @@ function WantListHome({ view, onNavigate, onOpenArtist, onOpenAlbum }: Props & {
                 className="browse-card want-artist-card"
                 onClick={() => onNavigate({ page: 'artist', name: artist.artist, mbid: artist.artist_mbid ?? undefined })}
               >
-                {artist.representative_media_item_id == null && artist.artist_mbid ? (
-                  <CatalogCover kind="artist" mbid={artist.artist_mbid} className="want-artist-cover" />
-                ) : (
-                  <Art mediaItemId={artist.representative_media_item_id} className="want-artist-cover" fallback={<MicIcon />} />
-                )}
+                <ArtistPicture
+                  mediaItemId={artist.representative_media_item_id}
+                  mbid={artist.artist_mbid}
+                  cover={artist.cover_release_group_mbid}
+                  className="want-artist-cover"
+                />
                 <span className="want-artist-text">
                   <span className="browse-title">{artist.artist}</span>
                   <span className="browse-subtitle">{summaryLine(artist)}</span>
@@ -494,85 +496,110 @@ function WantedArtistPage({
   const rechecking = useBackgroundRecheck(detail?.refreshing, detail?.artist_mbid, load)
   const matching = useMatchingPoll(detail?.matching === true, false, load)
   const checking = rechecking || matching
-  const credit = useCatalogArtCredit(detail?.artist_mbid)
 
   const back = () => onNavigate({ page: 'home' }, { up: true })
   if (failed) return <BackOnly onBack={back} message="Couldn't load this artist's wants." />
   if (!detail) return <BackOnly onBack={back} message="Loading…" loading />
   const mbid = detail.artist_mbid
   const remove = (entry: WantEntry) => wantApi.remove(entry.id)
+  const artistEntry = detail.artist_entry
+  const missing = detail.missing_release_groups ?? []
+  const albumEntries = detail.albums.filter((e) => !e.excluded)
+  const entryByGroup = new Map(albumEntries.flatMap((e) => (e.release_group_mbid ? [[e.release_group_mbid, e] as const] : [])))
+  const missingIds = new Set(missing.map((g) => g.mbid))
+  // The missing part of the catalog and the albums wanted one by one, as
+  // tiles in release-type sections like an artist page in the library.
+  const tiles: CatalogReleaseGroup[] = [
+    ...missing.map((group) => ({
+      ...group,
+      secondary_types: [],
+      disambiguation: null,
+      owned_album: null,
+      wanted: true,
+      excluded: false,
+      want_entry_id: entryByGroup.get(group.mbid)?.id ?? null,
+    })),
+    ...albumEntries.filter((e) => e.release_group_mbid && !missingIds.has(e.release_group_mbid)).map(entryTile),
+  ]
+  const albumsWithoutId = albumEntries.filter((e) => !e.release_group_mbid)
+  const tracks = detail.tracks.filter((e) => !e.excluded)
+  const openGroup = (group: CatalogReleaseGroup) => {
+    const entry = entryByGroup.get(group.mbid)
+    if (entry?.owned && entry.title) onOpenAlbum(entry.artist, entry.title)
+    else onNavigate({ page: 'album', mbid: group.mbid, artist: detail.artist })
+  }
+  const subtitle = artistEntry
+    ? detail.missing_release_groups == null
+      ? 'Everything · includes future releases'
+      : `${missing.length} release${missing.length === 1 ? '' : 's'} still missing · includes future releases`
+    : wantedCounts(albumEntries.length, tracks.length)
 
   return (
     <div className="want-list want-artist-page">
       <RecheckBar active={checking} />
-      <BrowseDetailHeader backLabel="Want list" onBack={back} title={detail.artist} />
-      <div className="want-artist-hero">
-        {mbid && <CatalogCover kind="artist" mbid={mbid} className="want-artist-hero-art" />}
-        <div>
-          <h2 className="want-page-title">{detail.artist}</h2>
-          {credit && <ImageCredit credit={credit} />}
-        </div>
-      </div>
+      <WantArtistHeader
+        name={detail.artist}
+        mbid={mbid}
+        cover={detail.cover_release_group_mbid}
+        subtitle={subtitle}
+        onBack={back}
+        actions={
+          <>
+            {artistEntry ? (
+              <WantButton label="Want everything" wanted onAdd={async () => {}} onRemove={() => remove(artistEntry)} />
+            ) : (
+              mbid && (
+                <WantButton
+                  label="Want everything"
+                  wanted={false}
+                  onAdd={() => wantApi.add({ kind: 'artist', artist: detail.artist, artist_mbid: mbid })}
+                />
+              )
+            )}
+            {mbid && (
+              <button type="button" className="btn btn-ghost" onClick={() => onNavigate({ page: 'catalog', mbid, name: detail.artist })}>
+                Full discography
+              </button>
+            )}
+            {detail.in_library && (
+              <button type="button" className="btn btn-ghost" onClick={() => onOpenArtist(detail.artist, { showMissing: true })}>
+                Open in library
+              </button>
+            )}
+          </>
+        }
+      />
       {state.fetchingMore && <FetchingMore />}
-      <div className="want-artist-actions">
-        {mbid && (
-          <button type="button" className="btn btn-primary" onClick={() => onNavigate({ page: 'catalog', mbid, name: detail.artist })}>
-            Browse full discography
-          </button>
-        )}
-        {detail.in_library && (
-          <button type="button" className="btn btn-ghost" onClick={() => onOpenArtist(detail.artist, { showMissing: true })}>
-            Open in library
-          </button>
-        )}
-      </div>
 
-      {detail.artist_entry && (
-        <section className="want-section" aria-label="Everything by this artist">
-          <div className="want-row">
-            <div className="want-row-main">
-              <div className="want-result-title">Everything by {detail.artist}</div>
-              <div className="want-result-sub">
-                {detail.missing_release_groups == null
-                  ? 'Includes future releases'
-                  : `${detail.missing_release_groups.length} release${detail.missing_release_groups.length === 1 ? '' : 's'} still missing · includes future releases`}
-              </div>
-            </div>
-            <WantButton wanted onAdd={async () => {}} onRemove={() => remove(detail.artist_entry!)} />
+      {groupCatalogSections(tiles).map((section) => (
+        <section key={section.heading} className="artist-album-section" aria-label={section.heading}>
+          <h3 className="artist-section-heading">{section.heading}</h3>
+          <div className="browse-grid">
+            {section.groups.map((group) => (
+              <CatalogTile
+                key={group.mbid}
+                group={group}
+                artist={detail.artist}
+                artistMbid={mbid}
+                artistWanted={artistEntry != null}
+                onOpen={() => openGroup(group)}
+              />
+            ))}
           </div>
-          {detail.missing_release_groups && detail.missing_release_groups.length > 0 && (
-            <ul className="want-results">
-              {detail.missing_release_groups.map((group) => (
-                <li key={group.mbid} className="want-result is-missing">
-                  <CatalogCover mbid={group.mbid} className="art-xs" />
-                  <button type="button" className="want-result-main" onClick={() => onNavigate({ page: 'album', mbid: group.mbid, artist: detail.artist })}>
-                    <span className="want-result-title">{group.title}</span>
-                    <span className="want-result-sub">
-                      {[group.section !== 'Album' ? group.section : null, year(group.first_release_date), statusLabel(group)].filter(Boolean).join(' · ')}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
         </section>
-      )}
+      ))}
 
-      {detail.albums.filter((e) => !e.excluded).length > 0 && (
-        <section className="want-section" aria-label="Albums">
-          <h2>Albums</h2>
+      {albumsWithoutId.length > 0 && (
+        <section className="artist-album-section" aria-label="Other albums">
+          <h3 className="artist-section-heading">{tiles.length > 0 ? 'Other albums' : 'Albums'}</h3>
           <ul className="want-results">
-            {detail.albums.filter((e) => !e.excluded).map((entry) => (
+            {albumsWithoutId.map((entry) => (
               <li key={entry.id} className={`want-result${entry.owned ? '' : ' is-missing'}`}>
-                {entry.release_group_mbid && <CatalogCover mbid={entry.release_group_mbid} className="art-xs" />}
                 <button
                   type="button"
                   className="want-result-main"
-                  onClick={() =>
-                    entry.owned && entry.title
-                      ? onOpenAlbum(entry.artist, entry.title)
-                      : entry.release_group_mbid && onNavigate({ page: 'album', mbid: entry.release_group_mbid, artist: entry.artist })
-                  }
+                  onClick={() => entry.owned && entry.title && onOpenAlbum(entry.artist, entry.title)}
+                  disabled={!(entry.owned && entry.title)}
                 >
                   <span className="want-result-title">{entry.title}</span>
                   <span className="want-result-sub">{progressLine(entry)}</span>
@@ -585,12 +612,13 @@ function WantedArtistPage({
         </section>
       )}
 
-      {detail.tracks.filter((e) => !e.excluded).length > 0 && (
-        <section className="want-section" aria-label="Songs">
-          <h2>Songs</h2>
+      {tracks.length > 0 && (
+        <section className="artist-album-section" aria-label="Songs">
+          <h3 className="artist-section-heading">Songs</h3>
           <ul className="want-results">
-            {detail.tracks.filter((e) => !e.excluded).map((entry) => (
+            {tracks.map((entry) => (
               <li key={entry.id} className={`want-result${entry.owned ? '' : ' is-missing'}`}>
+                {entry.release_group_mbid && <CatalogCover mbid={entry.release_group_mbid} className="art-xs" />}
                 <div className="want-result-main">
                   <span className="want-result-title">{entry.title}</span>
                   <span className="want-result-sub">
@@ -614,6 +642,89 @@ function WantedArtistPage({
           </ul>
         </section>
       )}
+    </div>
+  )
+}
+
+/** A wanted album entry as a catalog tile. */
+function entryTile(entry: WantEntry): CatalogReleaseGroup {
+  const type = entry.release_type || 'Album'
+  return {
+    mbid: entry.release_group_mbid!,
+    title: entry.title ?? '',
+    primary_type: entry.release_type,
+    secondary_types: [],
+    section: ['Album', 'EP', 'Single'].includes(type) ? type : 'Other',
+    first_release_date: null,
+    disambiguation: null,
+    status: entry.owned ? 'owned' : entry.owned_count ? 'partial' : 'missing',
+    owned_count: entry.owned_count,
+    total_count: entry.total_count,
+    owned_album: null,
+    wanted: true,
+    excluded: false,
+    want_entry_id: entry.id,
+  }
+}
+
+function wantedCounts(albums: number, songs: number) {
+  const parts: string[] = []
+  if (albums) parts.push(`${albums} album${albums === 1 ? '' : 's'} wanted`)
+  if (songs) parts.push(`${songs} song${songs === 1 ? '' : 's'} wanted`)
+  return parts.join(' · ')
+}
+
+/** An artist's picture: a library track's art, else the artist's photo, else
+ * (no photo known) one of their covers, else the mic. */
+function ArtistPicture({
+  mediaItemId,
+  mbid,
+  cover,
+  className,
+}: {
+  mediaItemId?: number | null
+  mbid: string | null | undefined
+  cover: string | null | undefined
+  className: string
+}) {
+  if (mediaItemId != null) return <Art mediaItemId={mediaItemId} className={className} fallback={<MicIcon />} />
+  if (cover) return <CatalogCover mbid={cover} className={className} />
+  if (mbid) return <CatalogCover kind="artist" mbid={mbid} className={className} />
+  return <Art mediaItemId={null} className={className} fallback={<MicIcon />} />
+}
+
+/** The top of a wanted or catalog artist's page, laid out like a library
+ * artist's: round picture, name, a line of facts and the actions. */
+function WantArtistHeader({
+  name,
+  mbid,
+  cover,
+  subtitle,
+  actions,
+  onBack,
+}: {
+  name: string
+  mbid: string | null | undefined
+  cover: string | null | undefined
+  subtitle: string
+  actions: ReactNode
+  onBack: () => void
+}) {
+  // A cover standing in for the photo has no photo credit to show.
+  const credit = useCatalogArtCredit(cover ? null : mbid)
+  return (
+    <div className="collection-detail collection-detail-round want-artist-header">
+      <BrowseDetailHeader backLabel="Want list" onBack={onBack} title={name} />
+      <div className="collection-detail-info">
+        <ArtistPicture mbid={mbid} cover={cover} className="collection-detail-art" />
+        <div className="collection-detail-copy">
+          <span className="collection-detail-eyebrow">Artist</span>
+          <h2>{name}</h2>
+          {subtitle && <p className="collection-detail-subtitle">{subtitle}</p>}
+          {credit && <ImageCredit credit={credit} />}
+          <div className="collection-detail-actions">{actions}</div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -683,27 +794,34 @@ function CatalogArtistPage({
   return (
     <div className="want-list catalog-page">
       <RecheckBar active={checking} />
-      <BrowseDetailHeader backLabel="Want list" onBack={back} title={name} />
-      <h2 className="want-page-title">{name}</h2>
-      <div className="want-artist-actions">
-        <WantButton
-          label="Want everything"
-          wanted={catalog.artist_wanted}
-          onAdd={() => wantApi.add(artistEntryInput)}
-          onRemove={async () => {
-            const detail = await wantApi.artist(name, catalog.artist_mbid)
-            if (detail.artist_entry) await wantApi.remove(detail.artist_entry.id)
-          }}
-        />
-        {catalog.in_library && (
-          <button type="button" className="btn btn-ghost" onClick={() => onOpenArtist(name, { showMissing: true })}>
-            Open in library
-          </button>
-        )}
-        <button type="button" className="btn btn-ghost" onClick={() => load(true)} disabled={refreshing || checking}>
-          {refreshing || checking ? 'Refreshing…' : 'Refresh'}
-        </button>
-      </div>
+      <WantArtistHeader
+        name={name}
+        mbid={catalog.artist_mbid}
+        cover={catalog.cover_release_group_mbid}
+        subtitle={catalog.release_groups.length ? `${catalog.release_groups.length} release${catalog.release_groups.length === 1 ? '' : 's'} on MusicBrainz` : ''}
+        onBack={back}
+        actions={
+          <>
+            <WantButton
+              label="Want everything"
+              wanted={catalog.artist_wanted}
+              onAdd={() => wantApi.add(artistEntryInput)}
+              onRemove={async () => {
+                const detail = await wantApi.artist(name, catalog.artist_mbid)
+                if (detail.artist_entry) await wantApi.remove(detail.artist_entry.id)
+              }}
+            />
+            {catalog.in_library && (
+              <button type="button" className="btn btn-ghost" onClick={() => onOpenArtist(name, { showMissing: true })}>
+                Open in library
+              </button>
+            )}
+            <button type="button" className="btn btn-ghost" onClick={() => load(true)} disabled={refreshing || checking}>
+              {refreshing || checking ? 'Refreshing…' : 'Refresh'}
+            </button>
+          </>
+        }
+      />
       {catalog.tracklists_total > 0 && catalog.tracklists_known < catalog.tracklists_total && catalog.artist_wanted && (
         <p className="settings-hint">
           Fetching tracklists in the background ({catalog.tracklists_known}/{catalog.tracklists_total})…

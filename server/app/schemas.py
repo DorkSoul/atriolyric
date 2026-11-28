@@ -1088,6 +1088,8 @@ class WantedArtistOut(OutModel):
     in_library: bool
     library_name: str | None
     representative_media_item_id: int | None
+    # A release group whose cover stands in for a missing artist photo.
+    cover_release_group_mbid: str | None = None
     updated_at: str | None
 
 
@@ -1112,6 +1114,8 @@ class WantedArtistDetailOut(OutModel):
     albums: list[WantEntryOut]
     tracks: list[WantEntryOut]
     in_library: bool
+    # A release group whose cover stands in for a missing artist photo.
+    cover_release_group_mbid: str | None = None
     # True while outside look-ups for this answer still run in the
     # background (app.deferred): it was built from stored data only, so ask
     # again shortly for the rest. False once nothing is missing or nothing
@@ -1206,6 +1210,8 @@ class CatalogArtistOut(OutModel):
     refreshing: bool
     artist_wanted: bool
     artist_name: str | None
+    # A release group whose cover stands in for a missing artist photo.
+    cover_release_group_mbid: str | None = None
     # True while outside look-ups for this answer still run in the
     # background (app.deferred): it was built from stored data only, so ask
     # again shortly for the rest. False once nothing is missing or nothing

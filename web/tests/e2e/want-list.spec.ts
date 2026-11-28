@@ -72,7 +72,7 @@ test('add songs and albums from search, then see them in the list', async ({ pag
   await wanted.locator('.want-artist-card').filter({ hasText: 'David Bowie' }).click()
   await expect(page).toHaveURL(/#\/want-list\/artist\/David%20Bowie/)
   await expect(page.getByRole('region', { name: 'Albums' })).toContainText('Ziggy Stardust')
-  await expect(page.getByRole('region', { name: 'Albums' })).toContainText('1/3 songs')
+  await expect(page.getByRole('region', { name: 'Albums' })).toContainText('1/3')
   await expect(page.getByRole('region', { name: 'Songs' })).toContainText('Starman')
 })
 

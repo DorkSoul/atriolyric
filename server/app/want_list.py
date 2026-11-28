@@ -62,7 +62,11 @@ from app.models import (
 )
 from app.owned_match import match_owned, normalize_title
 from app.provider_queue import yield_to_user_jobs
-from app.want_metadata import fetch_entry_in_background, revalidate_artist
+from app.want_metadata import (
+    artist_cover_fallbacks,
+    fetch_entry_in_background,
+    revalidate_artist,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -423,8 +427,11 @@ def artist_summaries(db: Session, user: User, *, all_users: bool = False) -> lis
                 "owned_count": 0,
                 "users": set(),
                 "latest": entry.created_at,
+                "groups": [],
             },
         )
+        if entry.release_group_mbid:
+            row["groups"].append(entry.release_group_mbid)
         row["artist_mbid"] = row["artist_mbid"] or entry.artist_mbid
         if entry.kind == "artist":
             row["wants_artist"] = True
@@ -440,12 +447,22 @@ def artist_summaries(db: Session, user: User, *, all_users: bool = False) -> lis
         if entry.created_at and (row["latest"] is None or entry.created_at > row["latest"]):
             row["latest"] = entry.created_at
     found = _library_artists(db, user, [(row["artist"], row["artist_mbid"]) for row in groups.values()])
+    # An artist with no track in the library and no photo shows a cover.
+    covers = artist_cover_fallbacks(
+        db,
+        {
+            key: (row["artist_mbid"], row["groups"])
+            for key, row in groups.items()
+            if found.get((row["artist"], row["artist_mbid"]), (None, None))[1] is None
+        },
+    )
     out = []
-    for row in groups.values():
+    for key, row in groups.items():
         artist, representative = found.get((row["artist"], row["artist_mbid"]), (None, None))
         out.append(
             {
-                **{k: v for k, v in row.items() if k not in ("users", "latest")},
+                **{k: v for k, v in row.items() if k not in ("users", "latest", "groups")},
+                "cover_release_group_mbid": covers.get(key),
                 "users": sorted(u for u in row["users"] if u) if names is not None else None,
                 "in_library": artist is not None,
                 "library_name": artist.name if artist else None,
@@ -545,6 +562,9 @@ def artist_detail(
         "albums": [entry_out(e, names) for e in entries if e.kind == "album"],
         "tracks": [entry_out(e, names) for e in entries if e.kind == "track"],
         "in_library": library_artist(db, user, name, mbid) is not None,
+        "cover_release_group_mbid": artist_cover_fallbacks(
+            db, {"": (mbid, [e.release_group_mbid for e in entries if e.release_group_mbid and not e.excluded])}
+        )[""],
     }
 
 
@@ -598,6 +618,7 @@ def catalog_artist(db: Session, user: User, mbid: str, name: str | None, *, refr
         group["want_entry_id"] = index["entry_ids"].get(("album", group["mbid"]))
     catalog["artist_wanted"] = artist_wanted
     catalog["artist_name"] = catalog["artist"] or name
+    catalog["cover_release_group_mbid"] = artist_cover_fallbacks(db, {"": (mbid, [])})[""]
     return catalog
 
 

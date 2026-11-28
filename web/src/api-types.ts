@@ -3198,6 +3198,8 @@ export interface components {
             artist_name: string | null;
             /** Artist Wanted */
             artist_wanted: boolean;
+            /** Cover Release Group Mbid */
+            cover_release_group_mbid: string | null;
             /** In Library */
             in_library: boolean;
             /**
@@ -4740,6 +4742,8 @@ export interface components {
             artist_entry: components["schemas"]["WantEntryOut"] | null;
             /** Artist Mbid */
             artist_mbid: string | null;
+            /** Cover Release Group Mbid */
+            cover_release_group_mbid: string | null;
             /** In Library */
             in_library: boolean;
             /**
@@ -4767,6 +4771,8 @@ export interface components {
             artist: string;
             /** Artist Mbid */
             artist_mbid: string | null;
+            /** Cover Release Group Mbid */
+            cover_release_group_mbid: string | null;
             /** In Library */
             in_library: boolean;
             /** Library Name */
